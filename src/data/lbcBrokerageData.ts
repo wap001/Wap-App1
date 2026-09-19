@@ -4,11 +4,16 @@ import {
   LbcTransaction,
   LbcWallet,
   BrokeragePortfolioHolding,
-  MarketplaceOrder3Sided
+  MarketplaceOrder3Sided,
+  TripartiteRatingRecord,
+  ParticipantPerformanceMetric
 } from '../types/architecture';
 
-export const LBC_USD_PEG_RATE = 0.10; // 1 LBC = $0.10 USD
+export const LBC_TOKENS_PER_LIBERTY_CASH = 167; // 167 LBC tokens = 1 Liberty Cash
+export const LIBERTY_CASH_USD_PEG = 1.00; // 1 Liberty Cash is pegged to 1 USD ($1.00 USD)
+export const LBC_USD_PEG_RATE = LIBERTY_CASH_USD_PEG / LBC_TOKENS_PER_LIBERTY_CASH; // 1 LBC = 1/167 USD (~$0.00598802 USD)
 export const LBC_TREASURY_APY = 5.2; // 5.2% APY auto-compounding on idle treasury balance
+export const LIBERTY_CASH_MIN_PURCHASING_POWER_USD = 0.50; // Guaranteed minimum equivalence of 0.50 USD in local purchasing power floor
 
 export const LBC_REWARD_RULES: LbcRewardRule[] = [
   // RIDES
@@ -18,8 +23,8 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     side: 'customer',
     baseLbc: 15,
     bonusLbc: 5,
-    description: 'Earn 15 LBC per ride + 5 LBC eco/helmet verification bonus',
-    usdEquivalent: 2.00
+    description: 'Earn 15 LBC per ride + 5 LBC eco/helmet verification bonus (optional reward)',
+    usdEquivalent: 0.12 // 20 LBC / 167
   },
   {
     activity: 'ride_completed',
@@ -27,8 +32,8 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     side: 'driver',
     baseLbc: 35,
     bonusLbc: 10,
-    description: 'Earn 35 LBC per trip + 10 LBC 5-star passenger rating bonus',
-    usdEquivalent: 4.50
+    description: 'Earn 35 LBC per trip + 10 LBC 5-star passenger rating bonus (optional reward)',
+    usdEquivalent: 0.27 // 45 LBC / 167
   },
   // DELIVERIES
   {
@@ -38,7 +43,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 12,
     bonusLbc: 4,
     description: 'Earn 12 LBC per courier shipment booked + 4 LBC off-peak bonus',
-    usdEquivalent: 1.60
+    usdEquivalent: 0.10 // 16 LBC / 167
   },
   {
     activity: 'delivery_completed',
@@ -47,7 +52,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 30,
     bonusLbc: 8,
     description: 'Earn 30 LBC per parcel delivered + 8 LBC priority transit bonus',
-    usdEquivalent: 3.80
+    usdEquivalent: 0.23 // 38 LBC / 167
   },
   // MERCHANT ORDER FULFILLMENT (3-SIDED)
   {
@@ -57,7 +62,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 20,
     bonusLbc: 10,
     description: 'Earn 20 LBC per merchant order + 10 LBC for orders over $25 USD',
-    usdEquivalent: 3.00
+    usdEquivalent: 0.18 // 30 LBC / 167
   },
   {
     activity: 'merchant_fulfillment',
@@ -66,7 +71,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 25,
     bonusLbc: 15,
     description: 'Earn 25 LBC per order fulfilled + 15 LBC rapid prep (<12 mins) bonus',
-    usdEquivalent: 4.00
+    usdEquivalent: 0.24 // 40 LBC / 167
   },
   {
     activity: 'merchant_fulfillment',
@@ -75,7 +80,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 35,
     bonusLbc: 10,
     description: 'Earn 35 LBC for picking up from merchant and delivering hot/secure',
-    usdEquivalent: 4.50
+    usdEquivalent: 0.27 // 45 LBC / 167
   },
   // COMPLETED SERVICES & ERRANDS
   {
@@ -85,7 +90,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 18,
     bonusLbc: 6,
     description: 'Earn 18 LBC for completed errand concierge booking',
-    usdEquivalent: 2.40
+    usdEquivalent: 0.14 // 24 LBC / 167
   },
   {
     activity: 'service_completed',
@@ -94,7 +99,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 40,
     bonusLbc: 15,
     description: 'Earn 40 LBC for completing specialized local concierge errand',
-    usdEquivalent: 5.50
+    usdEquivalent: 0.33 // 55 LBC / 167
   },
   {
     activity: 'service_completed',
@@ -103,7 +108,7 @@ export const LBC_REWARD_RULES: LbcRewardRule[] = [
     baseLbc: 30,
     bonusLbc: 10,
     description: 'Earn 30 LBC for supplying wholesale or retail items for errand runs',
-    usdEquivalent: 4.00
+    usdEquivalent: 0.24 // 40 LBC / 167
   }
 ];
 
@@ -406,6 +411,21 @@ export const BROKERAGE_ASSETS: BrokerageAsset[] = [
     iconSymbol: '🇸🇷'
   },
   {
+    id: 'fiat-dominica-xcd',
+    ticker: 'XCD-DOMINICA',
+    name: 'Dominica MoBanking / EC$ Payout',
+    assetClass: 'fiat_cashout',
+    priceUsd: 1.00,
+    change24h: 0.00,
+    currency: 'XCD',
+    exchange: 'National Bank of Dominica Rail',
+    description: 'Instant Eastern Caribbean Dollar (EC$) cash payout via NBD MoBanking or Digicel MyCash.',
+    minLbcToConvert: 25,
+    categoryTag: 'Dominica Mobile Money',
+    fiatRail: '1 USD = 2.70 XCD (Guaranteed $0.50 USD Purchasing Floor)',
+    iconSymbol: '🇩🇲'
+  },
+  {
     id: 'fiat-pix-ach',
     ticker: 'PIX-ACH-USD',
     name: 'Pix / ACH / Diaspora Cash Remittance',
@@ -422,7 +442,7 @@ export const BROKERAGE_ASSETS: BrokerageAsset[] = [
   }
 ];
 
-// INITIAL 3-SIDED USER WALLETS
+// INITIAL 3-SIDED USER WALLETS (167 LBC = 1 Liberty Cash = 1 USD Peg)
 export const INITIAL_LBC_WALLETS: Record<string, LbcWallet> = {
   driver_moise: {
     userId: 'driver_moise',
@@ -430,10 +450,11 @@ export const INITIAL_LBC_WALLETS: Record<string, LbcWallet> = {
     userName: 'Jean-Baptiste Moïse (Driver)',
     balanceLbc: 2450,
     totalEarnedLbc: 3820,
-    usdValue: 245.00,
+    usdValue: 14.67, // 2450 / 167
     annualYieldApy: LBC_TREASURY_APY,
-    stakingRewardsEarned: 18.50,
-    linkedBrokerageAccount: 'WAP-BRK-DRV-88219-SIP'
+    stakingRewardsEarned: 1.11,
+    linkedBrokerageAccount: 'WAP-BRK-DRV-88219-SIP',
+    earningLbcEnabled: true // Earning LBC tokens is optional
   },
   customer_fabienne: {
     userId: 'customer_fabienne',
@@ -441,10 +462,11 @@ export const INITIAL_LBC_WALLETS: Record<string, LbcWallet> = {
     userName: 'Fabienne Voltaire (Customer)',
     balanceLbc: 920,
     totalEarnedLbc: 1340,
-    usdValue: 92.00,
+    usdValue: 5.51, // 920 / 167
     annualYieldApy: LBC_TREASURY_APY,
-    stakingRewardsEarned: 7.20,
-    linkedBrokerageAccount: 'WAP-BRK-CST-44102-SIP'
+    stakingRewardsEarned: 0.43,
+    linkedBrokerageAccount: 'WAP-BRK-CST-44102-SIP',
+    earningLbcEnabled: true // Earning LBC tokens is optional
   },
   merchant_chef_fifi: {
     userId: 'merchant_chef_fifi',
@@ -452,10 +474,11 @@ export const INITIAL_LBC_WALLETS: Record<string, LbcWallet> = {
     userName: 'Chef Fifi - Chez Fifi Resto (Merchant)',
     balanceLbc: 4850,
     totalEarnedLbc: 7200,
-    usdValue: 485.00,
+    usdValue: 29.04, // 4850 / 167
     annualYieldApy: LBC_TREASURY_APY,
-    stakingRewardsEarned: 36.40,
-    linkedBrokerageAccount: 'WAP-BRK-MCH-99304-SIP'
+    stakingRewardsEarned: 2.18,
+    linkedBrokerageAccount: 'WAP-BRK-MCH-99304-SIP',
+    earningLbcEnabled: true // Earning LBC tokens is optional
   }
 };
 
@@ -632,7 +655,7 @@ export const INITIAL_3SIDED_ORDERS: MarketplaceOrder3Sided[] = [
   }
 ];
 
-// INITIAL RECENT LBC TRANSACTIONS LEDGER
+// INITIAL RECENT LBC TRANSACTIONS LEDGER (167 LBC = 1 Liberty Cash = $1 USD Peg)
 export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
   {
     id: 'tx-lbc-9901',
@@ -643,7 +666,7 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'ride_completed',
     activityReferenceId: 'ord-3s-103',
     amountLbc: 35,
-    usdEquivalent: 3.50,
+    usdEquivalent: 0.21, // 35 / 167
     txHash: '0x7e8b9...f4a1c',
     status: 'confirmed',
     note: 'Ride completion payout to driver wallet (+35 LBC)'
@@ -657,7 +680,7 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'ride_completed',
     activityReferenceId: 'ord-3s-103',
     amountLbc: 15,
-    usdEquivalent: 1.50,
+    usdEquivalent: 0.09, // 15 / 167
     txHash: '0x3c11d...e882a',
     status: 'confirmed',
     note: 'Ride completed customer reward rebate (+15 LBC)'
@@ -671,7 +694,7 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'merchant_fulfillment',
     activityReferenceId: 'ord-3s-101',
     amountLbc: 40, // 25 base + 15 rapid prep
-    usdEquivalent: 4.00,
+    usdEquivalent: 0.24, // 40 / 167
     txHash: '0x992fa...11c09',
     status: 'confirmed',
     note: 'Merchant fast prep (<10m) & order fulfillment bonus (+40 LBC)'
@@ -685,7 +708,7 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'merchant_fulfillment',
     activityReferenceId: 'ord-3s-102',
     amountLbc: 35,
-    usdEquivalent: 3.50,
+    usdEquivalent: 0.21, // 35 / 167
     txHash: '0x44aa2...8831f',
     status: 'confirmed',
     note: 'Delivery fulfillment from Pharmacy to Delmas 75 (+35 LBC)'
@@ -699,7 +722,7 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'merchant_fulfillment',
     activityReferenceId: 'ord-3s-101',
     amountLbc: 20,
-    usdEquivalent: 2.00,
+    usdEquivalent: 0.12, // 20 / 167
     txHash: '0x66f12...b0994',
     status: 'confirmed',
     note: 'Customer food delivery order reward cashback (+20 LBC)'
@@ -713,9 +736,161 @@ export const INITIAL_LBC_TRANSACTIONS: LbcTransaction[] = [
     activityType: 'streak_bonus',
     activityReferenceId: 'streak-5star-aug',
     amountLbc: 50,
-    usdEquivalent: 5.00,
+    usdEquivalent: 0.30, // 50 / 167
     txHash: '0x11cc4...77e92',
     status: 'confirmed',
     note: 'Weekly 5-Star Zero-Cancellation Driver Performance Streak (+50 LBC)'
+  },
+  {
+    id: 'tx-lbc-9907',
+    timestamp: 'Yesterday',
+    userId: 'customer_fabienne',
+    userType: 'customer',
+    userName: 'Fabienne Voltaire',
+    activityType: 'rating_bonus',
+    activityReferenceId: 'rate-3w-001',
+    amountLbc: 25,
+    usdEquivalent: 0.15, // 25 / 167
+    txHash: '0x88bb3...44d21',
+    status: 'confirmed',
+    note: '5-Star rating feedback bonus (+25 LBC)'
+  }
+];
+
+export const INITIAL_3WAY_RATINGS: TripartiteRatingRecord[] = [
+  {
+    id: 'rate-3w-001',
+    orderId: 'ord-3s-101',
+    timestamp: '15 mins ago',
+    fromRole: 'customer',
+    fromName: 'Fabienne Voltaire',
+    toRole: 'driver',
+    toName: 'Jean-Baptiste Moïse',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Exceptional riding safety through traffic, helmet provided, polite greeting!',
+    bonusLbcAwarded: 15
+  },
+  {
+    id: 'rate-3w-002',
+    orderId: 'ord-3s-101',
+    timestamp: '16 mins ago',
+    fromRole: 'customer',
+    fromName: 'Fabienne Voltaire',
+    toRole: 'merchant',
+    toName: 'Chef Fifi (Chez Fifi Resto)',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Griot was piping hot, sauce securely sealed with biodegradable container!',
+    bonusLbcAwarded: 15
+  },
+  {
+    id: 'rate-3w-003',
+    orderId: 'ord-3s-101',
+    timestamp: '18 mins ago',
+    fromRole: 'driver',
+    fromName: 'Jean-Baptiste Moïse',
+    toRole: 'merchant',
+    toName: 'Chef Fifi (Chez Fifi Resto)',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Order ready right at the dispatch pickup counter, zero wait time for rider!',
+    bonusLbcAwarded: 15
+  },
+  {
+    id: 'rate-3w-004',
+    orderId: 'ord-3s-101',
+    timestamp: '20 mins ago',
+    fromRole: 'driver',
+    fromName: 'Jean-Baptiste Moïse',
+    toRole: 'customer',
+    toName: 'Fabienne Voltaire',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Clear landmark instructions given, met curbside immediately with smile.',
+    bonusLbcAwarded: 10
+  },
+  {
+    id: 'rate-3w-005',
+    orderId: 'ord-3s-101',
+    timestamp: '22 mins ago',
+    fromRole: 'merchant',
+    fromName: 'Chef Fifi (Chez Fifi Resto)',
+    toRole: 'driver',
+    toName: 'Jean-Baptiste Moïse',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Equipped with insulated thermal bag, verified order number accurately.',
+    bonusLbcAwarded: 15
+  },
+  {
+    id: 'rate-3w-006',
+    orderId: 'ord-3s-102',
+    timestamp: '1 hour ago',
+    fromRole: 'customer',
+    fromName: 'Dr. Réginald B.',
+    toRole: 'driver',
+    toName: 'Jean-Baptiste Moïse',
+    overallStars: 5,
+    punctualityScore: 5,
+    communicationScore: 5,
+    reliabilityOrQualityScore: 5,
+    comment: 'Medicine delivered promptly and securely. Reliable community partner.',
+    bonusLbcAwarded: 15
+  }
+];
+
+export const INITIAL_PERFORMANCE_METRICS: ParticipantPerformanceMetric[] = [
+  {
+    id: 'driver_moise',
+    role: 'driver',
+    name: 'Jean-Baptiste Moïse',
+    avatarIcon: '🏍️',
+    ratingAverage: 4.96,
+    totalTripsOrOrders: 642,
+    metricLabel: 'Driver Efficiency & Safety',
+    metricValue: '98.8% On-Time Completion',
+    tierBadge: 'Elite Platinum',
+    streakWeeks: 9,
+    bonusLbcDistributed: 380,
+    financialFreedomSummary: 'Your high efficiency has grown your LBC balance toward your goal of fractional S&P 500 ownership!'
+  },
+  {
+    id: 'customer_fabienne',
+    role: 'customer',
+    name: 'Fabienne Voltaire',
+    avatarIcon: '⭐',
+    ratingAverage: 4.98,
+    totalTripsOrOrders: 128,
+    metricLabel: 'Customer Reliability & Courtesy',
+    metricValue: '99.5% Curbside Punctuality',
+    tierBadge: 'Elite Platinum',
+    streakWeeks: 6,
+    bonusLbcDistributed: 190,
+    financialFreedomSummary: 'Reliable order pickups generate passive LBC savings, building an accessible investment portfolio.'
+  },
+  {
+    id: 'merchant_chef_fifi',
+    role: 'merchant',
+    name: 'Chef Fifi (Chez Fifi Resto)',
+    avatarIcon: '🍲',
+    ratingAverage: 4.92,
+    totalTripsOrOrders: 415,
+    metricLabel: 'Merchant Fulfillment Speed',
+    metricValue: '7.8 min Avg Kitchen Dispatch',
+    tierBadge: 'Gold Star',
+    streakWeeks: 7,
+    bonusLbcDistributed: 310,
+    financialFreedomSummary: 'Rapid prep times earn daily LBC rewards, creating a business growth reserve and treasury yield.'
   }
 ];

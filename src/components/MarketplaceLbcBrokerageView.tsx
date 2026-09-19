@@ -25,7 +25,8 @@ import {
   Package,
   FileText,
   Lock,
-  Wallet
+  Wallet,
+  Star
 } from 'lucide-react';
 import {
   RegionId,
@@ -40,6 +41,7 @@ import {
 } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
+import { ThreeWayRatingPerformanceView } from './ThreeWayRatingPerformanceView';
 import {
   BROKERAGE_ASSETS,
   INITIAL_3SIDED_ORDERS,
@@ -84,24 +86,98 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
   const [tradeSuccessMsg, setTradeSuccessMsg] = useState<string | null>(null);
 
   // Sub-tab view in this module
-  const [mainViewTab, setMainViewTab] = useState<'3sided_orders' | 'rewards_engine' | 'brokerage_converter' | 'portfolio' | 'api_docs'>('3sided_orders');
+  const [mainViewTab, setMainViewTab] = useState<
+    '3sided_orders' | 'ratings_performance' | 'brokerage_converter' | 'portfolio' | 'rewards_engine' | 'api_docs'
+  >('3sided_orders');
 
   // Filter for transactions ledger
   const [ledgerFilter, setLedgerFilter] = useState<'all' | 'driver' | 'customer' | 'merchant'>('all');
+
+  // Callback to award bonus LBC to top-rated participants in the 3-way system
+  const handleAwardBonusLbc = (
+    participantId: string,
+    participantName: string,
+    role: MarketplaceSide,
+    bonusAmountLbc: number,
+    reason: string
+  ) => {
+    const targetPersona =
+      role === 'driver'
+        ? 'driver_moise'
+        : role === 'customer'
+        ? 'customer_fabienne'
+        : 'merchant_chef_fifi';
+
+    setWallets((prev) => {
+      const w = prev[targetPersona];
+      if (!w) return prev;
+      const newBal = w.balanceLbc + bonusAmountLbc;
+      return {
+        ...prev,
+        [targetPersona]: {
+          ...w,
+          balanceLbc: newBal,
+          totalEarnedLbc: w.totalEarnedLbc + bonusAmountLbc,
+          usdValue: newBal * LBC_USD_PEG_RATE
+        }
+      };
+    });
+
+    const tx: LbcTransaction = {
+      id: `tx-lbc-bonus-${Date.now()}`,
+      timestamp: 'Just now',
+      userId: targetPersona,
+      userType: role,
+      userName: participantName,
+      activityType: 'rating_bonus',
+      activityReferenceId: `rate-award-${Date.now()}`,
+      amountLbc: bonusAmountLbc,
+      usdEquivalent: bonusAmountLbc * LBC_USD_PEG_RATE,
+      txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
+      status: 'confirmed',
+      note: `3-Way Rating Performance Bonus (+${bonusAmountLbc} LBC): ${reason}`
+    };
+
+    setTransactions((prev) => [tx, ...prev]);
+  };
+
+  const handleToggleEarningLbc = async (personaKey: string) => {
+    const currentStatus = wallets[personaKey]?.earningLbcEnabled !== false;
+    const nextStatus = !currentStatus;
+
+    setWallets((prev) => ({
+      ...prev,
+      [personaKey]: {
+        ...prev[personaKey],
+        earningLbcEnabled: nextStatus
+      }
+    }));
+
+    try {
+      await fetch(`/api/lbc/wallet/${personaKey}/earning-preference`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enabled: nextStatus })
+      });
+    } catch {
+      // local fallback
+    }
+  };
 
   // Active wallet for the chosen persona
   const currentWallet = wallets[activePersona] || wallets.driver_moise;
   const currentPortfolio = portfolios[activePersona] || [];
 
-  // Local fiat equivalent of 1 LBC in selected region
+  // Regional Purchasing Power & Peg Notice (167 LBC = 1 Liberty Cash = $1.00 USD)
+  const libertyCashUnits = currentWallet.balanceLbc / 167;
   const regionalRateNotice =
     region === 'haiti'
-      ? `1 LBC = 13.15 HTG (${(currentWallet.balanceLbc * 13.15).toLocaleString()} HTG)`
+      ? `167 LBC = 1 Liberty Cash = 131.50 HTG (${(libertyCashUnits * 131.50).toLocaleString(undefined, { maximumFractionDigits: 1 })} HTG)`
       : region === 'french_guiana'
-      ? `1 LBC = 0.0925 EUR (${(currentWallet.balanceLbc * 0.0925).toFixed(2)} €)`
+      ? `167 LBC = 1 Liberty Cash = 0.92 EUR (${(libertyCashUnits * 0.92).toFixed(2)} € • Min. $0.50 Purchasing Floor)`
       : region === 'guyana'
-      ? `1 LBC = 20.85 GYD (${(currentWallet.balanceLbc * 20.85).toLocaleString()} GYD)`
-      : `1 LBC = 3.56 SRD (${(currentWallet.balanceLbc * 3.56).toLocaleString()} SRD)`;
+      ? `167 LBC = 1 Liberty Cash = 208.50 GYD (${(libertyCashUnits * 208.50).toLocaleString(undefined, { maximumFractionDigits: 1 })} GYD)`
+      : `167 LBC = 1 Liberty Cash = 2.70 XCD (Dominica EC$ ${(libertyCashUnits * 2.70).toFixed(2)})`;
 
   // Progress an order through the 3-sided lifecycle and trigger tripartite LBC rewards!
   const handleFulfillOrder = async (orderId: string) => {
@@ -487,11 +563,12 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
 
           {/* Peg & APY Callout */}
           <div className="flex sm:flex-col items-end justify-between sm:justify-center bg-neutral-950/80 border border-neutral-800 px-4 py-3 rounded-xl shrink-0">
-            <div className="text-[11px] text-neutral-400">Fixed Peg Reference</div>
-            <div className="text-lg font-bold text-amber-400 font-mono">1 LBC = $0.10 USD</div>
+            <div className="text-[11px] text-neutral-400">Peg Standard (Dominica, Haiti, etc.)</div>
+            <div className="text-base font-bold text-amber-400 font-mono">167 LBC = 1 Liberty Cash</div>
+            <div className="text-xs font-semibold text-white font-mono">1 Liberty Cash = $1.00 USD</div>
             <div className="text-[10px] text-emerald-400 flex items-center gap-1 mt-0.5">
               <Zap className="w-3 h-3" />
-              <span>{LBC_TREASURY_APY}% APY Auto-Compounding</span>
+              <span>Min. $0.50 Floor • {LBC_TREASURY_APY}% APY</span>
             </div>
           </div>
         </div>
@@ -540,9 +617,9 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
         </div>
       </div>
 
-      {/* User Persona Switcher (Allows testing Customer, Driver, or Merchant perspectives) */}
+      {/* User Persona Switcher & Optional Earning Controls */}
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-4 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider pl-1">
             Active User Persona:
           </span>
@@ -583,6 +660,23 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
               <span>Chef Fifi - Chez Fifi (Merchant)</span>
             </button>
           </div>
+
+          {/* Optional LBC Earning Toggle */}
+          <div className="flex items-center gap-1.5 bg-neutral-950 px-2.5 py-1 rounded-xl border border-neutral-800 ml-1">
+            <span className="text-[11px] text-neutral-400">Optional LBC Tokens:</span>
+            <button
+              id={`marketplace-toggle-lbc-${activePersona}`}
+              type="button"
+              onClick={() => handleToggleEarningLbc(activePersona)}
+              className={`px-2 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-1 ${
+                currentWallet.earningLbcEnabled !== false
+                  ? 'bg-emerald-950 text-emerald-300 border border-emerald-700'
+                  : 'bg-neutral-800 text-neutral-400 border border-neutral-700'
+              }`}
+            >
+              {currentWallet.earningLbcEnabled !== false ? '✓ Opted In (Earn LBC)' : '✕ Opted Out (Direct Cash)'}
+            </button>
+          </div>
         </div>
 
         {/* Selected Persona Wallet Summary */}
@@ -594,7 +688,9 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
             <div className="text-[10px] text-neutral-400">{currentWallet.userName} Balance:</div>
             <div className="font-bold text-white flex items-center gap-1.5">
               <span className="text-amber-400 text-sm">{currentWallet.balanceLbc.toLocaleString()} LBC</span>
-              <span className="text-neutral-400 font-normal">(${currentWallet.usdValue.toFixed(2)} USD)</span>
+              <span className="text-neutral-400 font-normal">
+                ({(currentWallet.balanceLbc / 167).toFixed(2)} Liberty Cash • ${currentWallet.usdValue.toFixed(2)} USD)
+              </span>
             </div>
           </div>
           <div className="pl-3 border-l border-neutral-800 hidden sm:block">
@@ -618,6 +714,21 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
           <span>3-Sided Orders & Tripartite Flow</span>
           <span className="px-1.5 py-0.2 rounded-full bg-neutral-950/40 text-[10px]">
             {orders.filter((o) => o.status !== 'delivered').length} active
+          </span>
+        </button>
+
+        <button
+          onClick={() => setMainViewTab('ratings_performance')}
+          className={`px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap ${
+            mainViewTab === 'ratings_performance'
+              ? 'bg-amber-400 text-neutral-950 shadow font-bold'
+              : 'bg-neutral-900 text-neutral-400 hover:text-white border border-neutral-800'
+          }`}
+        >
+          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <span>3-Way Rating & Performance Tracking</span>
+          <span className="px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-400 text-[10px] border border-emerald-800 font-bold">
+            Auto-Bonus Active
           </span>
         </button>
 
@@ -670,6 +781,14 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
           <span>Backend API Architecture</span>
         </button>
       </div>
+
+      {/* VIEW: 3-WAY RATING & PERFORMANCE TRACKING */}
+      {mainViewTab === 'ratings_performance' && (
+        <ThreeWayRatingPerformanceView
+          onAwardBonusLbc={handleAwardBonusLbc}
+          onPlaySpeech={onPlaySpeech}
+        />
+      )}
 
       {/* VIEW 1: 3-SIDED MARKETPLACE ORDERS & SIMULATION */}
       {mainViewTab === '3sided_orders' && (
@@ -1163,10 +1282,14 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
                 {/* Trade Execution Calculation Slip */}
                 <div className="bg-neutral-950 border border-neutral-800/80 rounded-xl p-3.5 space-y-2 text-xs mb-4">
                   <div className="flex items-center justify-between text-neutral-400">
-                    <span>LBC Conversion Value (USD):</span>
+                    <span>Liberty Cash Peg (167 LBC = $1.00 USD):</span>
                     <span className="font-mono text-white font-semibold">
-                      ${(convertAmountLbc * LBC_USD_PEG_RATE).toFixed(2)} USD
+                      ${(convertAmountLbc * LBC_USD_PEG_RATE).toFixed(2)} USD ({(convertAmountLbc / 167).toFixed(2)} Liberty Cash)
                     </span>
+                  </div>
+                  <div className="flex items-center justify-between text-emerald-400 text-[11px]">
+                    <span>Purchasing Power Guarantee:</span>
+                    <span>Min. $0.50 USD local purchasing floor</span>
                   </div>
                   <div className="flex items-center justify-between text-neutral-400">
                     <span>Brokerage Commission:</span>

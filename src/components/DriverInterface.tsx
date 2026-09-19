@@ -31,13 +31,16 @@ import {
   Filter,
   ChevronRight,
   X,
-  Calendar
+  Calendar,
+  Flame
 } from 'lucide-react';
 import { RegionId, LanguageCode, DriverRideHistoryItem } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS, INITIAL_DRIVER_RIDE_HISTORY } from '../data/mockData';
 import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, COUNTRY_LOOKUP } from '../data/internationalData';
 import { translations } from '../data/translations';
 import { FloatingSOSButton } from './FloatingSOSButton';
+import { DriverSafetyKitModal } from './DriverSafetyKitModal';
+import { RideDemandHeatMap } from './RideDemandHeatMap';
 import { VehicleClass, DriverDocumentUpload, NavigationManeuver } from '../types/internationalScope';
 
 interface DriverInterfaceProps {
@@ -120,8 +123,11 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
   const [cashOutSuccess, setCashOutSuccess] = useState<boolean>(false);
   const [walletBalanceUSD, setWalletBalanceUSD] = useState<number>(34.5);
 
-  // Driver View Mode: 'radar' (live dispatch radar) vs 'history' (ride history & earnings)
-  const [driverViewMode, setDriverViewMode] = useState<'radar' | 'history'>('radar');
+  // Driver Safety Kit Feature
+  const [showSafetyKitModal, setShowSafetyKitModal] = useState<boolean>(false);
+
+  // Driver View Mode: 'radar' (live dispatch radar), 'history' (ride history), 'heatmap' (surge demand map)
+  const [driverViewMode, setDriverViewMode] = useState<'radar' | 'history' | 'heatmap'>('radar');
 
   // Driver Ride History State
   const [rideHistory, setRideHistory] = useState<DriverRideHistoryItem[]>(() => {
@@ -531,7 +537,7 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
           </div>
         </div>
 
-        {/* View Switcher (Radar vs History) & Online/Offline Switch */}
+        {/* View Switcher (Radar vs History vs Heatmap) & Safety Kit & Online Switch */}
         <div className="flex items-center gap-2 flex-wrap">
           <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800 text-xs">
             <button
@@ -546,6 +552,19 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
             >
               <Radio className="w-3.5 h-3.5" />
               <span>{t.dispatchRadar}</span>
+            </button>
+            <button
+              id="tab-driver-heatmap"
+              type="button"
+              onClick={() => setDriverViewMode('heatmap')}
+              className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                driverViewMode === 'heatmap'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5 text-orange-400" />
+              <span>Surge Heatmap</span>
             </button>
             <button
               id="tab-driver-history"
@@ -564,6 +583,16 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
               </span>
             </button>
           </div>
+
+          <button
+            id="btn-driver-safety-kit-trigger"
+            type="button"
+            onClick={() => setShowSafetyKitModal(true)}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow bg-amber-400/15 hover:bg-amber-400 hover:text-neutral-950 text-amber-300 border border-amber-400/40 cursor-pointer"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Safety Kit</span>
+          </button>
 
           <button
             id="btn-driver-online-toggle"
@@ -975,6 +1004,46 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
       )}
 
       {/* ------------------------------------------------------------------- */}
+      {/* DRIVER RIDE DEMAND HEAT MAP VIEW                                    */}
+      {/* ------------------------------------------------------------------- */}
+      {driverViewMode === 'heatmap' && (
+        <div id="section-driver-heatmap" className="space-y-4 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 bg-neutral-950 border border-neutral-800 rounded-xl p-3.5">
+            <div className="flex items-center gap-2">
+              <Flame className="w-4 h-4 text-amber-400" />
+              <div>
+                <h3 className="text-sm font-bold text-white">Ride Demand Heat Map & Surge Corridors</h3>
+                <p className="text-[11px] text-neutral-400">
+                  Target high passenger volume zones across {currentCountry.name} to maximize hourly earnings pace.
+                </p>
+              </div>
+            </div>
+
+            <button
+              id="btn-driver-heatmap-to-radar"
+              type="button"
+              onClick={() => setDriverViewMode('radar')}
+              className="px-3.5 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-300 border border-neutral-700 text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer self-start sm:self-auto"
+            >
+              <Radio className="w-3.5 h-3.5 text-amber-400" />
+              <span>Back to Radar</span>
+            </button>
+          </div>
+
+          <RideDemandHeatMap
+            region={region}
+            countryCode={currentCountry.code}
+            currencyCode={currentCountry.currencyCode}
+            currencySymbol={currentCountry.currencySymbol}
+            onSelectCorridor={(corridor) => {
+              alert(`Corridor targeted: ${corridor.corridorName}. Heading towards ${corridor.pickupHotspot}!`);
+              setDriverViewMode('radar');
+            }}
+          />
+        </div>
+      )}
+
+      {/* ------------------------------------------------------------------- */}
       {/* RADAR & LIVE DISPATCH SECTION                                       */}
       {/* ------------------------------------------------------------------- */}
       {driverViewMode === 'radar' && (
@@ -1213,7 +1282,20 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
       </>
       )}
 
-      {/* Persistent Floating SOS Emergency Button */}
+      {/* Driver Safety Kit Modal */}
+      <DriverSafetyKitModal
+        isOpen={showSafetyKitModal}
+        onClose={() => setShowSafetyKitModal(false)}
+        driverName={driver.fullName}
+        vehicleModel={driver.vehicleType}
+        plateNumber={driver.plateNumber}
+        region={region}
+        countryCode={currentCountry.code}
+        language={language}
+        onPlaySpeech={onPlaySpeech}
+      />
+
+      {/* Persistent Floating SOS Emergency Button (Top-Right aligned) */}
       <FloatingSOSButton
         role="driver"
         region={region}
@@ -1221,6 +1303,7 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
         userName={driver.fullName}
         currentLandmark="Delmas 33 route intersection"
         onPlaySpeech={onPlaySpeech}
+        position="top-right"
       />
     </div>
   );

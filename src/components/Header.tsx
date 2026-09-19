@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Bike,
   Globe,
@@ -19,11 +19,14 @@ import {
   Server,
   Cloud,
   Terminal,
-  Coins
+  Coins,
+  ArrowUpRight,
+  History
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
+import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 
 export type ActiveTabId =
   | 'simulator'
@@ -73,6 +76,10 @@ export const Header: React.FC<HeaderProps> = ({
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
 
+  // Brokerage API Overlay & LBC Transaction History State
+  const [isBrokerageOverlayOpen, setIsBrokerageOverlayOpen] = useState(false);
+  const [overlayInitialTab, setOverlayInitialTab] = useState<'transfer' | 'history'>('transfer');
+
   const languages: { code: LanguageCode; label: string; flag: string }[] = [
     { code: 'ht', label: 'Kreyòl', flag: '🇭🇹' },
     { code: 'fr', label: 'Français', flag: '🇫🇷' },
@@ -93,6 +100,53 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="hidden md:inline-block text-neutral-400">
             {currentRegion.flag} {currentRegion.name} ({currentRegion.sampleCity}) • {currentRegion.currency}
           </span>
+        </div>
+
+        {/* Persistent LBC Token Balance Indicator & Transfer / Brokerage Action */}
+        <div className="flex items-center gap-1.5 bg-neutral-950/90 border border-amber-500/50 rounded-xl px-2.5 py-1 text-xs shadow-inner">
+          <button
+            id="header-lbc-balance-indicator"
+            onClick={() => {
+              setOverlayInitialTab('history');
+              setIsBrokerageOverlayOpen(true);
+            }}
+            className="flex items-center gap-1.5 hover:opacity-85 transition text-amber-400 group cursor-pointer"
+            title="Click to view Liberté Cash (LBC) transaction history"
+          >
+            <Coins className="w-4 h-4 text-amber-400 animate-pulse group-hover:scale-110 transition-transform shrink-0" />
+            <span className="font-mono font-black text-amber-400 tracking-tight">2,850 LBC</span>
+            <span className="text-neutral-400 font-mono text-[11px] hidden sm:inline">(17.07 Liberty Cash • $17.07)</span>
+            <span className="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-800 font-bold hidden md:inline">
+              5.2% APY
+            </span>
+          </button>
+
+          <div className="h-3.5 w-px bg-neutral-800" />
+
+          <button
+            id="header-lbc-transfer-btn"
+            onClick={() => {
+              setOverlayInitialTab('transfer');
+              setIsBrokerageOverlayOpen(true);
+            }}
+            className="flex items-center gap-1 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 font-black px-2.5 py-0.5 rounded-lg text-[11px] shadow transition active:scale-95 cursor-pointer"
+            title="Transfer & Convert LBC to Fractional Equities or Cash"
+          >
+            <ArrowUpRight className="w-3.5 h-3.5" />
+            <span>Transfer</span>
+          </button>
+
+          <button
+            id="header-lbc-history-btn"
+            onClick={() => {
+              setOverlayInitialTab('history');
+              setIsBrokerageOverlayOpen(true);
+            }}
+            className="p-1 text-neutral-400 hover:text-white hover:bg-neutral-800 rounded-md transition hidden sm:flex cursor-pointer"
+            title="View LBC Transaction History"
+          >
+            <History className="w-3.5 h-3.5" />
+          </button>
         </div>
 
         {/* Region & Language & Offline controls */}
@@ -414,6 +468,14 @@ export const Header: React.FC<HeaderProps> = ({
           <span>Offline & USSD</span>
         </button>
       </nav>
+
+      {/* Embedded Brokerage API Integration Overlay & LBC Transaction History */}
+      <BrokerageIntegrationOverlay
+        isOpen={isBrokerageOverlayOpen}
+        onClose={() => setIsBrokerageOverlayOpen(false)}
+        initialTab={overlayInitialTab}
+        onPlaySpeech={(txt) => onPlayVoiceGuide()}
+      />
     </header>
   );
 };

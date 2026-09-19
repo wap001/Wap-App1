@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Navigation, Bike, Compass, ShieldAlert, Radio } from 'lucide-react';
+import { Navigation, Bike, Compass, ShieldAlert, Radio, Flame } from 'lucide-react';
 import { ActiveOrder, RegionId } from '../types/architecture';
 
 interface LiveRouteMapProps {
@@ -11,6 +11,7 @@ interface LiveRouteMapProps {
 export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOffline }) => {
   const [progress, setProgress] = useState(0.42); // 0.0 to 1.0 along the route
   const [isPlaying, setIsPlaying] = useState(true);
+  const [showHeatmap, setShowHeatmap] = useState(false);
 
   // Animate motorcycle along the polyline
   useEffect(() => {
@@ -64,13 +65,25 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => setShowHeatmap(!showHeatmap)}
+            className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition ${
+              showHeatmap
+                ? 'bg-amber-400 text-neutral-950 shadow'
+                : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300'
+            }`}
+          >
+            <Flame className={`w-3.5 h-3.5 ${showHeatmap ? 'text-neutral-950 fill-neutral-950' : 'text-amber-400'}`} />
+            <span>{showHeatmap ? 'Surge Map: ON' : 'Surge Map'}</span>
+          </button>
           <span className="font-mono text-amber-400 font-bold">{currentSpeed} km/h</span>
           <button
             onClick={() => setIsPlaying(!isPlaying)}
             className="px-2 py-0.5 rounded bg-neutral-700 hover:bg-neutral-600 text-[11px] font-medium transition"
           >
-            {isPlaying ? 'Pause Simulation' : 'Resume Simulation'}
+            {isPlaying ? 'Pause' : 'Resume'}
           </button>
         </div>
       </div>
@@ -83,8 +96,29 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
             <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeWidth="1" />
             </pattern>
+
+            {/* Demand Thermal Radial Gradients */}
+            <radialGradient id="map-heat-pickup" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(239, 68, 68, 0.6)" />
+              <stop offset="50%" stopColor="rgba(245, 158, 11, 0.3)" />
+              <stop offset="100%" stopColor="rgba(0, 0, 0, 0)" />
+            </radialGradient>
+            <radialGradient id="map-heat-surge" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(245, 158, 11, 0.55)" />
+              <stop offset="60%" stopColor="rgba(245, 158, 11, 0.15)" />
+              <stop offset="100%" stopColor="rgba(0, 0, 0, 0)" />
+            </radialGradient>
           </defs>
           <rect width="100%" height="100%" fill="url(#grid)" />
+
+          {/* Demand Surge Heat Layer */}
+          {showHeatmap && (
+            <g className="animate-fadeIn">
+              <circle cx={pickupPoint.x} cy={pickupPoint.y} r="85" fill="url(#map-heat-pickup)" className="animate-pulse" />
+              <circle cx={intermediatePoint2.x} cy={intermediatePoint2.y} r="65" fill="url(#map-heat-surge)" />
+              <circle cx={dropoffPoint.x} cy={dropoffPoint.y} r="55" fill="url(#map-heat-surge)" />
+            </g>
+          )}
 
           {/* Background Street Curves */}
           <path d="M 0 160 Q 150 140 300 200 T 600 240" fill="none" stroke="#262626" strokeWidth="14" strokeLinecap="round" />

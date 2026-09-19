@@ -333,6 +333,23 @@ export interface LbcWallet {
   annualYieldApy: number;
   stakingRewardsEarned: number;
   linkedBrokerageAccount: string;
+  earningLbcEnabled?: boolean; // Earning LBC tokens is optional (true = accumulate LBC, false = direct cash)
+}
+
+export interface RegionalPurchasingPowerGuarantee {
+  regionCode: string;
+  countryName: string;
+  currencyCode: string;
+  currencySymbol: string;
+  exchangeRateToUSD: number;
+  isBelowOneLocalUnit: boolean; // e.g. EUR (0.92 per USD)
+  isHighDenomination: boolean; // e.g. HTG (131.5), GYD (208.5), SRD (35.6), XCD (2.70)
+  libertyCashAmount: number; // 1 Liberty Cash pegged to $1.00 USD (167 LBC)
+  nominalLocalAmount: number;
+  guaranteedMinimumFloorUSD: number; // 0.50 USD minimum equivalence guarantee
+  effectiveLocalPurchasingPower: number;
+  purchasingPowerProtectionActive: boolean;
+  protectiveRationale: string;
 }
 
 export type AssetClass = 'fractional_stock' | 'etf' | 'regional_asset' | 'fiat_cashout';
@@ -417,4 +434,38 @@ export interface MarketplaceOrder3Sided {
   };
   createdAt: string;
   completedAt?: string;
+}
+
+// ==========================================
+// 7. 3-WAY RATING & PERFORMANCE TRACKING TYPES
+// ==========================================
+export interface TripartiteRatingRecord {
+  id: string;
+  orderId: string;
+  timestamp: string;
+  fromRole: MarketplaceSide;
+  fromName: string;
+  toRole: MarketplaceSide;
+  toName: string;
+  overallStars: number; // 1 - 5
+  punctualityScore: number; // 1 - 5
+  communicationScore: number; // 1 - 5
+  reliabilityOrQualityScore: number; // 1 - 5
+  comment: string;
+  bonusLbcAwarded?: number;
+}
+
+export interface ParticipantPerformanceMetric {
+  id: string;
+  role: MarketplaceSide;
+  name: string;
+  avatarIcon: string;
+  ratingAverage: number; // e.g. 4.95
+  totalTripsOrOrders: number;
+  metricLabel: string; // "Driver Efficiency" | "Customer Reliability" | "Merchant Fulfillment Speed"
+  metricValue: string; // "98.4% On-time" | "99.2% Pickup Rate" | "8.4 min Avg Prep"
+  tierBadge: 'Elite Platinum' | 'Gold Star' | 'Silver Vanguard';
+  streakWeeks: number;
+  bonusLbcDistributed: number;
+  financialFreedomSummary: string; // Encouraging note on investment growth
 }

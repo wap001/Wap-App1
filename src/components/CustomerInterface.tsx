@@ -39,7 +39,8 @@ import {
   Heart,
   Share2,
   Copy,
-  ExternalLink
+  ExternalLink,
+  Flame
 } from 'lucide-react';
 import { RegionId, LanguageCode, ActiveOrder } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS, INITIAL_ACTIVE_ORDERS } from '../data/mockData';
@@ -47,6 +48,10 @@ import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, calculateDynamicFare, COUNTRY_L
 import { translations } from '../data/translations';
 import { LiveRouteMap } from './LiveRouteMap';
 import { FloatingSOSButton } from './FloatingSOSButton';
+import { CustomerLbcWalletQuickWidget } from './CustomerLbcWalletQuickWidget';
+import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
+import { RideDemandHeatMap } from './RideDemandHeatMap';
+import { TippingModule, TipSubmission } from './TippingModule';
 import { VehicleClass } from '../types/internationalScope';
 
 interface CustomerInterfaceProps {
@@ -139,6 +144,16 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
   // Share Live Trip State
   const [showShareModal, setShowShareModal] = useState<boolean>(false);
   const [shareCopied, setShareCopied] = useState<boolean>(false);
+
+  // Demand Heat Map Modal / Inline State
+  const [showDemandHeatMap, setShowDemandHeatMap] = useState<boolean>(false);
+
+  // In-App Tipping Modal State (LBC token, Liberté Cash, or Fiat)
+  const [showTippingModal, setShowTippingModal] = useState<boolean>(false);
+  const [confirmedTip, setConfirmedTip] = useState<TipSubmission | null>(null);
+
+  // Brokerage Full Overlay Modal State (accessible from Quick View widget)
+  const [isBrokerageOverlayOpen, setIsBrokerageOverlayOpen] = useState<boolean>(false);
 
   // Calculate live dynamic fare quote for selected vehicle and country
   let fareQuote = null;
@@ -297,6 +312,21 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
       customerRating: driverRating,
       customerFeedback: ratingFeedbackText
     }));
+
+    // Award LBC ride completion reward rebate (+15 LBC) to customer wallet
+    fetch('/api/lbc/reward', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: 'customer_fabienne',
+        userType: 'customer',
+        amountLbc: 15,
+        activityType: 'ride_completed',
+        activityReferenceId: activeOrder.trackingCode || 'ord-3s-103',
+        note: `Ride completed customer reward rebate (+15 LBC)`
+      })
+    }).catch(() => {});
+
     onPlaySpeech(t.ratingSubmittedSuccess);
   };
 
@@ -1198,6 +1228,57 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
               )}
             </button>
           </div>
+
+          {/* Real-Time Ride Demand Heat Map Quick Banner */}
+          <div className="p-3 bg-gradient-to-r from-neutral-950 via-neutral-900 to-amber-950/20 border border-amber-400/30 rounded-xl flex items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-400/20 text-amber-400 flex items-center justify-center shrink-0">
+                <Flame className="w-4 h-4 text-amber-400 fill-amber-400" />
+              </div>
+              <div>
+                <div className="font-bold text-white flex items-center gap-2">
+                  <span>Ride Demand Heat Map</span>
+                  <span className="text-[10px] bg-amber-400/20 text-amber-300 px-1.5 py-0.2 rounded font-mono font-bold">
+                    Live Surges
+                  </span>
+                </div>
+                <div className="text-[11px] text-neutral-400">
+                  Inspect high-demand corridors &amp; live passenger surge multipliers in {selectedCountry.name}.
+                </div>
+              </div>
+            </div>
+
+            <button
+              id="btn-toggle-demand-heatmap"
+              type="button"
+              onClick={() => setShowDemandHeatMap(!showDemandHeatMap)}
+              className="px-3 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs flex items-center gap-1.5 transition shadow cursor-pointer shrink-0"
+            >
+              <Flame className="w-3.5 h-3.5" />
+              <span>{showDemandHeatMap ? 'Hide Heat Map' : 'View Heat Map'}</span>
+            </button>
+          </div>
+
+          {/* Render Demand Heat Map when toggled in booking form */}
+          {showDemandHeatMap && (
+            <div className="animate-fadeIn">
+              <RideDemandHeatMap
+                region={region}
+                countryCode={selectedCountry.code}
+                currencyCode={selectedCountry.currencyCode}
+                currencySymbol={selectedCountry.currencySymbol}
+                onSelectCorridor={(corridor) => {
+                  setPickupLandmark(corridor.pickupHotspot);
+                  setDropoffLandmark(corridor.corridorName.split('→')[1]?.trim() || corridor.corridorName);
+                  setShowDemandHeatMap(false);
+                  if (onPlaySpeech) {
+                    onPlaySpeech(`Selected corridor ${corridor.corridorName}. Destination updated.`);
+                  }
+                }}
+              />
+            </div>
+          )}
+
           {/* Pickup Landmark */}
           <div className="space-y-1">
             <label className="text-xs font-medium text-neutral-300 flex items-center gap-1.5">
@@ -1418,6 +1499,38 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
             >
               <Share2 className="w-3.5 h-3.5 text-neutral-950" />
               <span>{t.shareTrip}</span>
+            </button>
+          </div>
+
+          {/* Tipping Option During Active Trip (LBC, Liberté Cash, or Fiat) */}
+          <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center shrink-0">
+                <Heart className="w-4 h-4 fill-pink-500/20" />
+              </div>
+              <div>
+                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>Tip Driver or Merchant</span>
+                  {confirmedTip && (
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-400 px-1.5 py-0.2 rounded font-mono font-bold">
+                      ✓ Sent {confirmedTip.amount} {confirmedTip.currencyCode}
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-neutral-400">
+                  Reward with LBC Token, Liberté Cash, or local {selectedCountry.currencyCode}.
+                </p>
+              </div>
+            </div>
+
+            <button
+              id="btn-open-active-trip-tip"
+              type="button"
+              onClick={() => setShowTippingModal(true)}
+              className="w-full sm:w-auto px-4 py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs flex items-center justify-center gap-1.5 transition shadow cursor-pointer shrink-0"
+            >
+              <Coins className="w-3.5 h-3.5 text-neutral-950" />
+              <span>{confirmedTip ? 'Add Another Tip' : 'Add Tip'}</span>
             </button>
           </div>
 
@@ -1663,31 +1776,20 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
                 />
               </div>
 
-              {/* Driver Tip Gratitude Selector (Optional) */}
-              <div className="space-y-1.5 pt-2 border-t border-neutral-800">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-neutral-300 flex items-center gap-1">
-                    <Heart className="w-3.5 h-3.5 text-pink-400" />
-                    <span>Add Driver Tip</span>
-                  </span>
-                  <span className="text-[10px] text-neutral-400">100% goes directly to driver</span>
-                </div>
-                <div className="grid grid-cols-4 gap-2">
-                  {[0, 10, 15, 20].map((tipPct) => (
-                    <button
-                      key={tipPct}
-                      type="button"
-                      onClick={() => setDriverTipPercentage(tipPct)}
-                      className={`py-1.5 rounded-lg border text-xs font-bold transition cursor-pointer ${
-                        driverTipPercentage === tipPct
-                          ? 'bg-amber-400 border-amber-400 text-neutral-950 shadow'
-                          : 'bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-white'
-                      }`}
-                    >
-                      {tipPct === 0 ? 'No Tip' : `+${tipPct}%`}
-                    </button>
-                  ))}
-                </div>
+              {/* Driver & Merchant Tipping Module (LBC Token, Liberté Cash, or Fiat Currency) */}
+              <div className="pt-2 border-t border-neutral-800">
+                <TippingModule
+                  driverName={activeOrder.driver?.fullName || 'Wap Driver'}
+                  merchantName="Lakay Pétion-Ville Kitchen"
+                  orderFare={activeOrder.fareAmount}
+                  currencyCode={selectedCountry.currencyCode}
+                  currencySymbol={selectedCountry.currencySymbol}
+                  fiatExchangeRateToUSD={selectedCountry.exchangeRateToUSD}
+                  onTipConfirmed={(tip) => {
+                    setConfirmedTip(tip);
+                  }}
+                  onPlaySpeech={onPlaySpeech}
+                />
               </div>
 
               {/* Action Buttons */}
@@ -1717,7 +1819,44 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
         </div>
       )}
 
-      {/* Persistent Floating SOS Emergency Button */}
+      {/* Active Trip Tipping Modal (LBC, Liberté Cash, or Fiat) */}
+      {showTippingModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn">
+          <div className="w-full max-w-lg">
+            <TippingModule
+              driverName={activeOrder.driver?.fullName || 'Wap Driver'}
+              merchantName="Lakay Pétion-Ville Kitchen"
+              orderFare={activeOrder.fareAmount}
+              currencyCode={selectedCountry.currencyCode}
+              currencySymbol={selectedCountry.currencySymbol}
+              fiatExchangeRateToUSD={selectedCountry.exchangeRateToUSD}
+              onTipConfirmed={(tip) => {
+                setConfirmedTip(tip);
+              }}
+              onPlaySpeech={onPlaySpeech}
+              onClose={() => setShowTippingModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Floating Quick View LBC Wallet Widget (Top-Right aligned) */}
+      <CustomerLbcWalletQuickWidget
+        userId="customer_fabienne"
+        userName="Fabienne Voltaire"
+        position="top-right"
+        onOpenFullBrokerage={() => setIsBrokerageOverlayOpen(true)}
+      />
+
+      {/* Embedded Full Brokerage Overlay (opened from Quick View widget action) */}
+      <BrokerageIntegrationOverlay
+        isOpen={isBrokerageOverlayOpen}
+        onClose={() => setIsBrokerageOverlayOpen(false)}
+        initialTab="transfer"
+        onPlaySpeech={onPlaySpeech}
+      />
+
+      {/* Persistent Floating SOS Emergency Button (Top-Right aligned) */}
       <FloatingSOSButton
         role="customer"
         region={region}
@@ -1725,6 +1864,7 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
         userName="Daphnée Lamour"
         currentLandmark={bookingStep === 'active' ? activeOrder.pickupLandmark : pickupLandmark}
         onPlaySpeech={onPlaySpeech}
+        position="top-right"
       />
     </div>
   );

@@ -16,13 +16,15 @@ import {
   Lock,
   Compass,
   ArrowRight,
-  Info
+  Info,
+  Coins
 } from 'lucide-react';
 import {
   OPERATIONAL_COUNTRIES,
   VEHICLE_CLASSES,
   COUNTRY_LOOKUP,
-  calculateDynamicFare
+  calculateDynamicFare,
+  calculateLibertyCashPurchasingPowerGuarantee
 } from '../data/internationalData';
 import { VehicleClass } from '../types/internationalScope';
 
@@ -35,7 +37,7 @@ export const DynamicPricingView: React.FC = () => {
   const [weatherCondition, setWeatherCondition] = useState<'clear' | 'drizzle' | 'tropical_downpour'>('clear');
   const [surgeMultiplier, setSurgeMultiplier] = useState<number>(1.2);
   const [tripsPerHourPace, setTripsPerHourPace] = useState<number>(2.4);
-  const [activeTab, setActiveTab] = useState<'calculator' | 'formula' | 'custom_markets' | 'vehicle_classes' | 'target_earnings'>('calculator');
+  const [activeTab, setActiveTab] = useState<'calculator' | 'formula' | 'custom_markets' | 'vehicle_classes' | 'target_earnings' | 'purchasing_power'>('calculator');
 
   const selectedCountry = COUNTRY_LOOKUP[selectedCountryCode] || COUNTRY_LOOKUP['HT'];
   const isExcluded = selectedCountry.isStrictlyExcluded;
@@ -173,6 +175,19 @@ export const DynamicPricingView: React.FC = () => {
           <DollarSign className="w-3.5 h-3.5" />
           <span>Driver Target Earnings ($5-$12/hr & $15+ Scale)</span>
         </button>
+
+        <button
+          id="pricing-tab-purchasing-power"
+          onClick={() => setActiveTab('purchasing_power')}
+          className={`px-3 py-2 rounded-xl font-bold flex items-center gap-1.5 transition whitespace-nowrap ${
+            activeTab === 'purchasing_power'
+              ? 'bg-amber-400 text-neutral-950 shadow'
+              : 'bg-neutral-900 text-neutral-300 hover:text-white border border-neutral-800'
+          }`}
+        >
+          <Coins className="w-3.5 h-3.5 text-amber-400 group-hover:text-neutral-950" />
+          <span>Purchasing Power Floor ($0.50 Min / 167 LBC Peg)</span>
+        </button>
       </div>
 
       {/* ===================================================================== */}
@@ -203,7 +218,7 @@ export const DynamicPricingView: React.FC = () => {
                   <option value="GY">🇬🇾 Guyana (Georgetown) - GYD</option>
                   <option value="SR">🇸🇷 Suriname (Paramaribo) - SRD</option>
                   <option value="JM">🇯🇲 Jamaica (Kingston) - JMD</option>
-                  <option value="DO">🇩🇴 Dominican Republic (Santo Domingo) - DOP</option>
+                  <option value="DM">🇩🇲 Dominica (Roseau) - XCD (EC$)</option>
                 </optgroup>
                 <optgroup label="Central America">
                   <option value="CR">🇨🇷 Costa Rica (San José) - CRC</option>
@@ -776,6 +791,95 @@ export const DynamicPricingView: React.FC = () => {
                 Top drivers executing 3.5+ trips/hour with 5-star ratings, stackable multi-order parcel
                 deliveries, and customer tips.
               </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
+      {/* 6. PURCHASING POWER GUARANTEE & 167 LBC / 1 LIBERTY CASH PEG          */}
+      {/* ===================================================================== */}
+      {activeTab === 'purchasing_power' && (
+        <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <Coins className="w-5 h-5 text-amber-400" />
+                <span>LIBERTÉ CASH & PURCHASING POWER FLOOR ARCHITECTURE</span>
+              </div>
+              <h2 className="text-xl font-black text-white">
+                167 LBC Tokens = 1 Liberty Cash ($1.00 USD) • Min. $0.50 Purchasing Floor
+              </h2>
+              <p className="text-xs text-neutral-300 mt-1.5 max-w-3xl leading-relaxed">
+                Empowering Drivers, Customers, and Merchants with true financial freedom and sovereign wealth creation.
+                For regions where $1 USD is below 1 unit of local currency (e.g. Eurozone / French Guiana), or where $1 USD
+                converts to high local denominations (e.g. Haiti HTG, Dominica XCD, Guyana GYD, Suriname SRD), 1 Liberty Cash
+                guarantees a permanent floor equivalence of at least <strong>$0.50 USD in real local purchasing power</strong>.
+              </p>
+            </div>
+
+            <div className="bg-neutral-950 border border-amber-500/40 rounded-xl p-3.5 text-right shrink-0">
+              <div className="text-[11px] text-neutral-400">Peg Standard</div>
+              <div className="text-base font-black text-amber-400">167 LBC = 1 Liberty Cash</div>
+              <div className="text-[11px] text-emerald-400 font-semibold">1 Liberty Cash = $1.00 USD</div>
+            </div>
+          </div>
+
+          {/* Regional Purchasing Power Matrix */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
+            {[
+              { code: 'DM', name: 'Dominica', currency: 'XCD', rate: 2.70, type: 'ECCB Peg / High Denomination', flag: '🇩🇲' },
+              { code: 'HT', name: 'Haiti', currency: 'HTG', rate: 131.50, type: 'High Local Denomination', flag: '🇭🇹' },
+              { code: 'GF', name: 'French Guiana', currency: 'EUR', rate: 0.92, type: 'Below 1 Unit (< 1.0 EUR)', flag: '🇬🇫' },
+              { code: 'GY', name: 'Guyana', currency: 'GYD', rate: 208.50, type: 'High Local Denomination', flag: '🇬🇾' },
+              { code: 'SR', name: 'Suriname', currency: 'SRD', rate: 35.60, type: 'High Local Denomination', flag: '🇸🇷' },
+              { code: 'JM', name: 'Jamaica', currency: 'JMD', rate: 156.00, type: 'High Local Denomination', flag: '🇯🇲' },
+            ].map((market) => {
+              const guarantee = calculateLibertyCashPurchasingPowerGuarantee(market.code, 1.0);
+              return (
+                <div key={market.code} className="bg-neutral-950 border border-neutral-800 rounded-xl p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{market.flag}</span>
+                      <div>
+                        <div className="text-sm font-bold text-white">{market.name}</div>
+                        <div className="text-[10px] text-neutral-400 font-mono">1 USD = {market.rate} {market.currency}</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-neutral-900 border border-neutral-700 text-amber-300">
+                      {market.type}
+                    </span>
+                  </div>
+
+                  <div className="bg-neutral-900/80 p-2.5 rounded-lg border border-neutral-800/80 space-y-1 text-[11px] font-mono">
+                    <div className="flex justify-between text-neutral-400">
+                      <span>1 Liberty Cash (167 LBC):</span>
+                      <span className="text-white font-bold">{guarantee.nominalLocalAmount} {market.currency}</span>
+                    </div>
+                    <div className="flex justify-between text-emerald-400 font-semibold">
+                      <span>Min. Purchasing Floor:</span>
+                      <span>$0.50 USD equiv.</span>
+                    </div>
+                    <div className="flex justify-between text-amber-300">
+                      <span>Effective Local Power:</span>
+                      <span className="font-bold">{guarantee.effectiveLocalPurchasingPower} {market.currency}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-[11px] text-neutral-400 leading-relaxed">
+                    {guarantee.protectiveRationale}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bg-neutral-950 border border-emerald-500/30 rounded-xl p-4 flex items-start gap-3 text-xs text-neutral-300">
+            <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div>
+              <strong className="text-emerald-300 block mb-1">Voluntary & Inclusive Wealth Engine:</strong>
+              Earning LBC tokens is 100% optional for all platform participants. Drivers, customers, and merchants who opt in accumulate
+              daily compounding treasury yield (5.2% APY) and fractional investments in equities and treasury assets, while having the flexibility to cash out locally at any time.
             </div>
           </div>
         </div>

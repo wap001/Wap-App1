@@ -5,6 +5,7 @@ import {
   FleetHeatmapNode,
   VehicleClass
 } from '../types/internationalScope';
+import { RegionalPurchasingPowerGuarantee } from '../types/architecture';
 
 // ============================================================================
 // 1. VEHICLE CLASS SPECIFICATIONS & MULTIPLIERS
@@ -260,7 +261,7 @@ export const OPERATIONAL_COUNTRIES: CountryOperationalConfig[] = [
   },
 
   // --------------------------------------------------------------------------
-  // CARIBBEAN & GUIANAS (GUYANA, SURINAME, HAITI, JAMAICA, DOMINICAN REPUBLIC)
+  // CARIBBEAN & GUIANAS (GUYANA, SURINAME, HAITI, JAMAICA, DOMINICA)
   // --------------------------------------------------------------------------
   {
     code: 'HT',
@@ -360,27 +361,28 @@ export const OPERATIONAL_COUNTRIES: CountryOperationalConfig[] = [
     surgeCapMultiplier: 1.6
   },
   {
-    code: 'DO',
-    name: 'Dominican Republic',
-    flag: '🇩🇴',
+    code: 'DM',
+    name: 'Dominica',
+    flag: '🇩🇲',
     region: 'caribbean_guianas',
-    currencyCode: 'DOP',
-    currencySymbol: 'RD$',
-    exchangeRateToUSD: 59.5,
+    currencyCode: 'XCD',
+    currencySymbol: 'EC$',
+    exchangeRateToUSD: 2.70, // Pegged by Eastern Caribbean Central Bank (ECCB) at 2.70 XCD = 1 USD
     isStrictlyExcluded: false,
-    targetHourlyEarningsUSD: { min: 5.5, max: 11.5, highPerformer: 15.5 },
+    targetHourlyEarningsUSD: { min: 6.0, max: 12.0, highPerformer: 16.0 },
     marketAdjustmentType: 'developing_market_baseline',
     supportedVehicleClasses: ['2_wheeler', '3_wheeler', '4_wheeler'],
     paymentRails: [
-      { id: 'do_tPago', name: 'tPago / MIO', type: 'mobile_money', provider: 'tPago', settlementSpeed: 'Instant', currency: 'DOP', iconName: 'smartphone' },
-      { id: 'do_cash', name: 'Pesos Dominicanos Efectivo', type: 'cash_on_delivery', provider: 'Wap Escrow', settlementSpeed: 'Immediate', currency: 'DOP', iconName: 'banknote' }
+      { id: 'dm_mobanking', name: 'MoBanking (National Bank of Dominica)', type: 'mobile_money', provider: 'NBD MoBanking', settlementSpeed: 'Instant', currency: 'XCD', iconName: 'smartphone' },
+      { id: 'dm_mycash', name: 'Digicel MyCash / Paymaster', type: 'mobile_money', provider: 'Digicel MyCash', settlementSpeed: 'Instant', currency: 'XCD', iconName: 'smartphone' },
+      { id: 'dm_cash', name: 'Eastern Caribbean Dollar Cash (Escrow)', type: 'cash_on_delivery', provider: 'Wap Escrow', settlementSpeed: 'Immediate', currency: 'XCD', iconName: 'banknote' }
     ],
-    sampleCity: 'Santo Domingo (Piantini)',
-    centerCoordinates: { lat: 18.4861, lng: -69.9312 },
-    baseFareUSD: 1.3,
-    perMinuteRateUSD: 0.12,
-    perKmRateUSD: 0.46,
-    minimumTripFloorUSD: 2.1,
+    sampleCity: 'Roseau (Bayfront / Potter\'s Ville)',
+    centerCoordinates: { lat: 15.3092, lng: -61.3794 },
+    baseFareUSD: 1.5,
+    perMinuteRateUSD: 0.14,
+    perKmRateUSD: 0.55,
+    minimumTripFloorUSD: 2.5,
     surgeCapMultiplier: 1.5
   },
 
@@ -847,8 +849,66 @@ export const FLEET_HEATMAP_DATA: FleetHeatmapNode[] = [
   { id: 'node-nbo', countryCode: 'KE', city: 'Nairobi', coordinates: { lat: -1.2921, lng: 36.8219 }, activeTwoWheelers: 510, activeThreeWheelers: 210, activeFourWheelers: 190, demandSurgeLevel: 1.5, averageHourlyEarningUSD: 8.7, status: 'surge_capped' },
   { id: 'node-ant', countryCode: 'MG', city: 'Antananarivo', coordinates: { lat: -18.8792, lng: 47.5079 }, activeTwoWheelers: 195, activeThreeWheelers: 115, activeFourWheelers: 45, demandSurgeLevel: 1.2, averageHourlyEarningUSD: 6.9, status: 'normal' },
   { id: 'node-jnb', countryCode: 'ZA', city: 'Johannesburg', coordinates: { lat: -26.2041, lng: 28.0473 }, activeTwoWheelers: 280, activeThreeWheelers: 0, activeFourWheelers: 240, demandSurgeLevel: 1.3, averageHourlyEarningUSD: 9.8, status: 'normal' },
+  { id: 'node-ros', countryCode: 'DM', city: 'Roseau', coordinates: { lat: 15.3092, lng: -61.3794 }, activeTwoWheelers: 64, activeThreeWheelers: 18, activeFourWheelers: 22, demandSurgeLevel: 1.15, averageHourlyEarningUSD: 8.8, status: 'normal' },
   { id: 'node-mia', countryCode: 'US', city: 'Miami', coordinates: { lat: 25.7617, lng: -80.1918 }, activeTwoWheelers: 85, activeThreeWheelers: 0, activeFourWheelers: 310, demandSurgeLevel: 1.65, averageHourlyEarningUSD: 27.5, status: 'high_demand' },
   // Blocked Nodes for Compliance Auditing
   { id: 'node-bue-blocked', countryCode: 'AR', city: 'Buenos Aires', coordinates: { lat: -34.6037, lng: -58.3816 }, activeTwoWheelers: 0, activeThreeWheelers: 0, activeFourWheelers: 0, demandSurgeLevel: 0.0, averageHourlyEarningUSD: 0.0, status: 'excluded_blocked' },
   { id: 'node-mvd-blocked', countryCode: 'UY', city: 'Montevideo', coordinates: { lat: -34.9011, lng: -56.1645 }, activeTwoWheelers: 0, activeThreeWheelers: 0, activeFourWheelers: 0, demandSurgeLevel: 0.0, averageHourlyEarningUSD: 0.0, status: 'excluded_blocked' }
 ];
+
+// ============================================================================
+// 5. LIBERTÉ CASH (LBC) PURCHASING POWER GUARANTEE ENGINE
+// ============================================================================
+/**
+ * 1 Liberty Cash is pegged to 1 USD ($1.00 USD) and equals 167 LBC tokens.
+ *
+ * For regions where $1 USD is below 1 unit of local currency (e.g. French Guiana EUR @ 0.92 EUR),
+ * or where $1 USD converts to high local denominations (e.g. Haiti HTG @ 131.50, Guyana GYD @ 208.50,
+ * Suriname SRD @ 35.60, Dominica XCD @ 2.70), 1 Liberty Cash guarantees a minimum equivalence of
+ * 0.50 USD in local purchasing power floor.
+ */
+export function calculateLibertyCashPurchasingPowerGuarantee(
+  countryCode: string,
+  libertyCashAmount: number = 1.0
+): RegionalPurchasingPowerGuarantee {
+  const country = COUNTRY_LOOKUP[countryCode] || COUNTRY_LOOKUP['HT'];
+  const exchangeRate = country.exchangeRateToUSD;
+  const isBelowOneLocalUnit = exchangeRate < 1.0;
+  const isHighDenomination = exchangeRate >= 2.0;
+
+  // 1 Liberty Cash = $1.00 USD nominal peg
+  const nominalUSD = libertyCashAmount * 1.0;
+  const nominalLocal = nominalUSD * exchangeRate;
+
+  // Minimum floor guarantee: 0.50 USD equivalence per 1 Liberty Cash
+  const guaranteedFloorUSD = libertyCashAmount * 0.50;
+  const guaranteedFloorLocal = guaranteedFloorUSD * exchangeRate;
+
+  // In regions with economic disparity, 1 Liberty Cash guarantees at minimum 0.50 USD equivalence
+  const effectiveLocalPurchasingPower = Math.max(nominalLocal, guaranteedFloorLocal);
+
+  let rationale = '';
+  if (isBelowOneLocalUnit) {
+    rationale = `In ${country.name}, $1 USD converts to ${exchangeRate} ${country.currencyCode} (< 1.0 unit). 1 Liberty Cash guarantees a minimum floor of $0.50 USD in real local purchasing power, ensuring micro-transactions remain stable and accessible.`;
+  } else if (isHighDenomination) {
+    rationale = `In ${country.name}, $1 USD converts to ${exchangeRate} ${country.currencyCode} (high denomination). 1 Liberty Cash guarantees an unshakeable minimum floor of $0.50 USD purchasing power (${guaranteedFloorLocal.toFixed(2)} ${country.currencyCode}), shielding participants against currency depreciation and localized inflation.`;
+  } else {
+    rationale = `1 Liberty Cash maintains standard parity with guaranteed $0.50 USD baseline purchasing power.`;
+  }
+
+  return {
+    regionCode: country.code,
+    countryName: country.name,
+    currencyCode: country.currencyCode,
+    currencySymbol: country.currencySymbol,
+    exchangeRateToUSD: exchangeRate,
+    isBelowOneLocalUnit,
+    isHighDenomination,
+    libertyCashAmount,
+    nominalLocalAmount: Math.round(nominalLocal * 100) / 100,
+    guaranteedMinimumFloorUSD: guaranteedFloorUSD,
+    effectiveLocalPurchasingPower: Math.round(effectiveLocalPurchasingPower * 100) / 100,
+    purchasingPowerProtectionActive: isBelowOneLocalUnit || isHighDenomination,
+    protectiveRationale: rationale
+  };
+}

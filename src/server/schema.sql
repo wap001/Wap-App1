@@ -160,10 +160,12 @@ CREATE TABLE IF NOT EXISTS lbc_wallets (
     user_name VARCHAR(120) NOT NULL,
     balance_lbc NUMERIC(14, 2) DEFAULT 0.00,
     total_earned_lbc NUMERIC(14, 2) DEFAULT 0.00,
-    usd_value NUMERIC(12, 2) GENERATED ALWAYS AS (balance_lbc * 0.10) STORED,
+    -- 167 LBC tokens = 1 Liberty Cash ($1.00 USD)
+    usd_value NUMERIC(12, 4) GENERATED ALWAYS AS (balance_lbc / 167.0) STORED,
     treasury_apy_rate NUMERIC(5, 2) DEFAULT 5.20,
     staking_rewards_earned NUMERIC(12, 2) DEFAULT 0.00,
     linked_brokerage_account VARCHAR(60) NOT NULL UNIQUE,
+    earning_lbc_enabled BOOLEAN DEFAULT TRUE,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 

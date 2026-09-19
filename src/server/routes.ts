@@ -4,19 +4,27 @@ import { activeDrivers, driverLocations } from './socket';
 import {
   BROKERAGE_ASSETS,
   INITIAL_3SIDED_ORDERS,
+  INITIAL_3WAY_RATINGS,
+  INITIAL_PERFORMANCE_METRICS,
   INITIAL_LBC_TRANSACTIONS,
   INITIAL_LBC_WALLETS,
   INITIAL_PORTFOLIO_HOLDINGS,
   LBC_REWARD_RULES,
   LBC_TREASURY_APY,
-  LBC_USD_PEG_RATE
+  LBC_USD_PEG_RATE,
+  LBC_TOKENS_PER_LIBERTY_CASH,
+  LIBERTY_CASH_USD_PEG,
+  LIBERTY_CASH_MIN_PURCHASING_POWER_USD
 } from '../data/lbcBrokerageData';
+import { calculateLibertyCashPurchasingPowerGuarantee } from '../data/internationalData';
 import {
   BrokerageConversionTrade,
   BrokeragePortfolioHolding,
   LbcTransaction,
   MarketplaceOrder3Sided,
-  MarketplaceSide
+  MarketplaceSide,
+  TripartiteRatingRecord,
+  ParticipantPerformanceMetric
 } from '../types/architecture';
 
 const router = Router();
@@ -29,6 +37,8 @@ let portfolioHoldings: Record<string, BrokeragePortfolioHolding[]> = JSON.parse(
 );
 let lbcTransactions: LbcTransaction[] = [...INITIAL_LBC_TRANSACTIONS];
 let brokerageTrades: BrokerageConversionTrade[] = [];
+let tripartiteRatings: TripartiteRatingRecord[] = [...INITIAL_3WAY_RATINGS];
+let participantMetrics: ParticipantPerformanceMetric[] = [...INITIAL_PERFORMANCE_METRICS];
 
 /**
  * 1. DYNAMIC FARE CALCULATION API
@@ -385,80 +395,92 @@ router.post('/api/marketplace/fulfill', (req: Request, res: Response) => {
 
     // 1. Customer Reward
     if (order.customerId && lbcWallets[order.customerId]) {
-      const custLbc = order.lbcRewards.customerLbc;
-      lbcWallets[order.customerId].balanceLbc += custLbc;
-      lbcWallets[order.customerId].totalEarnedLbc += custLbc;
-      lbcWallets[order.customerId].usdValue =
-        lbcWallets[order.customerId].balanceLbc * LBC_USD_PEG_RATE;
+      const custWallet = lbcWallets[order.customerId];
+      if (custWallet.earningLbcEnabled !== false) {
+        const custLbc = order.lbcRewards.customerLbc;
+        custWallet.balanceLbc += custLbc;
+        custWallet.totalEarnedLbc += custLbc;
+        custWallet.usdValue = custWallet.balanceLbc * LBC_USD_PEG_RATE;
 
-      const custTx: LbcTransaction = {
-        id: `tx-lbc-${Date.now()}-c`,
-        timestamp: nowTimestamp,
-        userId: order.customerId,
-        userType: 'customer',
-        userName: order.customerName,
-        activityType: order.type === 'ride' ? 'ride_completed' : 'merchant_fulfillment',
-        activityReferenceId: order.id,
-        amountLbc: custLbc,
-        usdEquivalent: custLbc * LBC_USD_PEG_RATE,
-        txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
-        status: 'confirmed',
-        note: `Reward for ${order.title} (+${custLbc} LBC)`
-      };
-      lbcTransactions.unshift(custTx);
-      rewardsDistributed.customer = { lbcEarned: custLbc, newBalance: lbcWallets[order.customerId].balanceLbc };
+        const custTx: LbcTransaction = {
+          id: `tx-lbc-${Date.now()}-c`,
+          timestamp: nowTimestamp,
+          userId: order.customerId,
+          userType: 'customer',
+          userName: order.customerName,
+          activityType: order.type === 'ride' ? 'ride_completed' : 'merchant_fulfillment',
+          activityReferenceId: order.id,
+          amountLbc: custLbc,
+          usdEquivalent: custLbc * LBC_USD_PEG_RATE,
+          txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
+          status: 'confirmed',
+          note: `Reward for ${order.title} (+${custLbc} LBC)`
+        };
+        lbcTransactions.unshift(custTx);
+        rewardsDistributed.customer = { lbcEarned: custLbc, newBalance: custWallet.balanceLbc };
+      } else {
+        rewardsDistributed.customer = { lbcEarned: 0, newBalance: custWallet.balanceLbc, note: 'LBC earning disabled by customer (direct cash preference)' };
+      }
     }
 
     // 2. Merchant Reward (if applicable)
     if (order.merchantId && lbcWallets[order.merchantId]) {
-      const merchLbc = order.lbcRewards.merchantLbc;
-      lbcWallets[order.merchantId].balanceLbc += merchLbc;
-      lbcWallets[order.merchantId].totalEarnedLbc += merchLbc;
-      lbcWallets[order.merchantId].usdValue =
-        lbcWallets[order.merchantId].balanceLbc * LBC_USD_PEG_RATE;
+      const merchWallet = lbcWallets[order.merchantId];
+      if (merchWallet.earningLbcEnabled !== false) {
+        const merchLbc = order.lbcRewards.merchantLbc;
+        merchWallet.balanceLbc += merchLbc;
+        merchWallet.totalEarnedLbc += merchLbc;
+        merchWallet.usdValue = merchWallet.balanceLbc * LBC_USD_PEG_RATE;
 
-      const merchTx: LbcTransaction = {
-        id: `tx-lbc-${Date.now()}-m`,
-        timestamp: nowTimestamp,
-        userId: order.merchantId,
-        userType: 'merchant',
-        userName: order.merchantName || 'Merchant',
-        activityType: 'merchant_fulfillment',
-        activityReferenceId: order.id,
-        amountLbc: merchLbc,
-        usdEquivalent: merchLbc * LBC_USD_PEG_RATE,
-        txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
-        status: 'confirmed',
-        note: `Merchant fulfillment & packing reward (+${merchLbc} LBC)`
-      };
-      lbcTransactions.unshift(merchTx);
-      rewardsDistributed.merchant = { lbcEarned: merchLbc, newBalance: lbcWallets[order.merchantId].balanceLbc };
+        const merchTx: LbcTransaction = {
+          id: `tx-lbc-${Date.now()}-m`,
+          timestamp: nowTimestamp,
+          userId: order.merchantId,
+          userType: 'merchant',
+          userName: order.merchantName || 'Merchant',
+          activityType: 'merchant_fulfillment',
+          activityReferenceId: order.id,
+          amountLbc: merchLbc,
+          usdEquivalent: merchLbc * LBC_USD_PEG_RATE,
+          txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
+          status: 'confirmed',
+          note: `Merchant fulfillment & packing reward (+${merchLbc} LBC)`
+        };
+        lbcTransactions.unshift(merchTx);
+        rewardsDistributed.merchant = { lbcEarned: merchLbc, newBalance: merchWallet.balanceLbc };
+      } else {
+        rewardsDistributed.merchant = { lbcEarned: 0, newBalance: merchWallet.balanceLbc, note: 'LBC earning disabled by merchant (direct cash preference)' };
+      }
     }
 
     // 3. Driver Reward
     if (order.driverId && lbcWallets[order.driverId]) {
-      const drvLbc = order.lbcRewards.driverLbc;
-      lbcWallets[order.driverId].balanceLbc += drvLbc;
-      lbcWallets[order.driverId].totalEarnedLbc += drvLbc;
-      lbcWallets[order.driverId].usdValue =
-        lbcWallets[order.driverId].balanceLbc * LBC_USD_PEG_RATE;
+      const drvWallet = lbcWallets[order.driverId];
+      if (drvWallet.earningLbcEnabled !== false) {
+        const drvLbc = order.lbcRewards.driverLbc;
+        drvWallet.balanceLbc += drvLbc;
+        drvWallet.totalEarnedLbc += drvLbc;
+        drvWallet.usdValue = drvWallet.balanceLbc * LBC_USD_PEG_RATE;
 
-      const drvTx: LbcTransaction = {
-        id: `tx-lbc-${Date.now()}-d`,
-        timestamp: nowTimestamp,
-        userId: order.driverId,
-        userType: 'driver',
-        userName: order.driverName || 'Driver',
-        activityType: order.type === 'ride' ? 'ride_completed' : 'merchant_fulfillment',
-        activityReferenceId: order.id,
-        amountLbc: drvLbc,
-        usdEquivalent: drvLbc * LBC_USD_PEG_RATE,
-        txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
-        status: 'confirmed',
-        note: `Delivery transit completion reward (+${drvLbc} LBC)`
-      };
-      lbcTransactions.unshift(drvTx);
-      rewardsDistributed.driver = { lbcEarned: drvLbc, newBalance: lbcWallets[order.driverId].balanceLbc };
+        const drvTx: LbcTransaction = {
+          id: `tx-lbc-${Date.now()}-d`,
+          timestamp: nowTimestamp,
+          userId: order.driverId,
+          userType: 'driver',
+          userName: order.driverName || 'Driver',
+          activityType: order.type === 'ride' ? 'ride_completed' : 'merchant_fulfillment',
+          activityReferenceId: order.id,
+          amountLbc: drvLbc,
+          usdEquivalent: drvLbc * LBC_USD_PEG_RATE,
+          txHash: `0x${Math.random().toString(16).substring(2, 10)}...${Math.random().toString(16).substring(2, 6)}`,
+          status: 'confirmed',
+          note: `Delivery transit completion reward (+${drvLbc} LBC)`
+        };
+        lbcTransactions.unshift(drvTx);
+        rewardsDistributed.driver = { lbcEarned: drvLbc, newBalance: drvWallet.balanceLbc };
+      } else {
+        rewardsDistributed.driver = { lbcEarned: 0, newBalance: drvWallet.balanceLbc, note: 'LBC earning disabled by driver (direct cash preference)' };
+      }
     }
   }
 
@@ -481,9 +503,47 @@ router.post('/api/marketplace/fulfill', (req: Request, res: Response) => {
 router.get('/api/lbc/rewards/rules', (req: Request, res: Response) => {
   res.json({
     success: true,
+    tokensPerLibertyCash: LBC_TOKENS_PER_LIBERTY_CASH,
+    libertyCashUsdPeg: LIBERTY_CASH_USD_PEG,
     pegRateUsd: LBC_USD_PEG_RATE,
+    minPurchasingPowerFloorUSD: LIBERTY_CASH_MIN_PURCHASING_POWER_USD,
     treasuryApyPercent: LBC_TREASURY_APY,
     rules: LBC_REWARD_RULES
+  });
+});
+
+/**
+ * Regional Purchasing Power Floor calculation API
+ * Ensures 1 Liberty Cash (167 LBC) guarantees a minimum equivalence of $0.50 USD in local purchasing power
+ */
+router.get('/api/lbc/purchasing-power', (req: Request, res: Response) => {
+  const countryCode = String(req.query.countryCode || 'HT');
+  const amountLibertyCash = Number(req.query.amount || 1.0);
+
+  const guarantee = calculateLibertyCashPurchasingPowerGuarantee(countryCode, amountLibertyCash);
+  res.json({
+    success: true,
+    guarantee
+  });
+});
+
+/**
+ * Update user's optional LBC earning preference
+ */
+router.put('/api/lbc/wallet/:userId/earning-preference', (req: Request, res: Response) => {
+  const { userId } = req.params;
+  const { enabled } = req.body;
+
+  if (!lbcWallets[userId]) {
+    return res.status(404).json({ error: `Wallet not found for user ${userId}` });
+  }
+
+  lbcWallets[userId].earningLbcEnabled = Boolean(enabled);
+
+  res.json({
+    success: true,
+    message: `LBC token earning preference updated for ${userId}: ${enabled ? 'Enabled' : 'Disabled (Direct Cash Preference)'}`,
+    wallet: lbcWallets[userId]
   });
 });
 
@@ -505,7 +565,7 @@ router.get('/api/lbc/wallet/:userType/:userId', (req: Request, res: Response) =>
 });
 
 /**
- * Award LBC tokens directly to any user for platform activity
+ * Award LBC tokens directly to any user for platform activity (respects optional earning preference)
  */
 router.post('/api/lbc/reward', (req: Request, res: Response) => {
   const { userId, userType, amountLbc, activityType, note, referenceId } = req.body;
@@ -524,8 +584,17 @@ router.post('/api/lbc/reward', (req: Request, res: Response) => {
       usdValue: 0,
       annualYieldApy: LBC_TREASURY_APY,
       stakingRewardsEarned: 0,
-      linkedBrokerageAccount: `WAP-BRK-${userId.toUpperCase()}-SIP`
+      linkedBrokerageAccount: `WAP-BRK-${userId.toUpperCase()}-SIP`,
+      earningLbcEnabled: true
     };
+  }
+
+  if (lbcWallets[userId].earningLbcEnabled === false) {
+    return res.json({
+      success: false,
+      message: `User ${userId} has opted out of earning LBC tokens. Direct cash preferred.`,
+      wallet: lbcWallets[userId]
+    });
   }
 
   const earned = Number(amountLbc);

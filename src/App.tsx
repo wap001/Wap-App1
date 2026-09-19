@@ -220,6 +220,15 @@ export default function App() {
           </div>
         )}
 
+        {/* 3-Sided Marketplace & LBC Token Brokerage */}
+        {activeTab === 'marketplace-lbc' && (
+          <MarketplaceLbcBrokerageView
+            region={selectedRegion}
+            language={selectedLanguage}
+            onPlaySpeech={handlePlaySpeech}
+          />
+        )}
+
         {/* Mobile UI/UX Wireframe & Code Studio */}
         {activeTab === 'mobile-studio' && <MobileAppDesignStudio />}
 

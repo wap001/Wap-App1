@@ -20,12 +20,13 @@ import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 
 interface FloatingSOSButtonProps {
-  role: 'customer' | 'driver';
+  role: 'customer' | 'driver' | 'vendor';
   region: RegionId;
   language: LanguageCode;
   userName: string;
   currentLandmark?: string;
   onPlaySpeech?: (text: string) => void;
+  position?: 'bottom-right' | 'top-right' | 'relative';
 }
 
 interface TelemetryPing {
@@ -44,7 +45,8 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
   language,
   userName,
   currentLandmark,
-  onPlaySpeech
+  onPlaySpeech,
+  position = 'bottom-right'
 }) => {
   const currentRegion = REGIONS[region];
   const [isOpen, setIsOpen] = useState(false);
@@ -191,10 +193,17 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
     }
   };
 
+  const positionClasses =
+    position === 'top-right'
+      ? 'fixed top-20 right-4 sm:right-6 z-40 flex flex-col items-end gap-1.5'
+      : position === 'relative'
+      ? 'relative flex flex-col items-end gap-1.5'
+      : 'fixed bottom-6 right-6 z-40 flex flex-col items-end gap-1.5';
+
   return (
     <>
       {/* Floating Action Button (FAB) */}
-      <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-1.5">
+      <div className={positionClasses}>
         {/* Urgent beacon badge if currently active */}
         {sosActive && (
           <div className="bg-red-950/90 text-red-200 border border-red-500/80 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg animate-bounce">

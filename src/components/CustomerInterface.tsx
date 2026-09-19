@@ -154,6 +154,7 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
 
   // Brokerage Full Overlay Modal State (accessible from Quick View widget)
   const [isBrokerageOverlayOpen, setIsBrokerageOverlayOpen] = useState<boolean>(false);
+  const [brokerageInitialTab, setBrokerageInitialTab] = useState<'transfer' | 'projection' | 'history'>('transfer');
 
   // Calculate live dynamic fare quote for selected vehicle and country
   let fareQuote = null;
@@ -1845,14 +1846,17 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
         userId="customer_fabienne"
         userName="Fabienne Voltaire"
         position="top-right"
-        onOpenFullBrokerage={() => setIsBrokerageOverlayOpen(true)}
+        onOpenFullBrokerage={(tab) => {
+          setBrokerageInitialTab(tab || 'transfer');
+          setIsBrokerageOverlayOpen(true);
+        }}
       />
 
       {/* Embedded Full Brokerage Overlay (opened from Quick View widget action) */}
       <BrokerageIntegrationOverlay
         isOpen={isBrokerageOverlayOpen}
         onClose={() => setIsBrokerageOverlayOpen(false)}
-        initialTab="transfer"
+        initialTab={brokerageInitialTab}
         onPlaySpeech={onPlaySpeech}
       />
 

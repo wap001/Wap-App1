@@ -34,11 +34,12 @@ import {
   LBC_USD_PEG_RATE,
   LBC_TREASURY_APY
 } from '../data/lbcBrokerageData';
+import { LbcGrowthProjectionWidget } from './LbcGrowthProjectionWidget';
 
 interface BrokerageIntegrationOverlayProps {
   isOpen: boolean;
   onClose: () => void;
-  initialTab?: 'transfer' | 'history';
+  initialTab?: 'transfer' | 'projection' | 'history';
   onPlaySpeech?: (text: string) => void;
 }
 
@@ -48,7 +49,7 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
   initialTab = 'transfer',
   onPlaySpeech
 }) => {
-  const [activeTab, setActiveTab] = useState<'transfer' | 'history'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'transfer' | 'projection' | 'history'>(initialTab);
   const [selectedPersona, setSelectedPersona] = useState<string>('driver_moise');
   const [wallets, setWallets] = useState<Record<string, LbcWallet>>(INITIAL_LBC_WALLETS);
   const [transactions, setTransactions] = useState<LbcTransaction[]>(INITIAL_LBC_TRANSACTIONS);
@@ -253,7 +254,7 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
         </div>
 
         {/* Tab Navigation */}
-        <div className="px-6 pt-3 bg-neutral-900 flex gap-2 border-b border-neutral-800">
+        <div className="px-6 pt-3 bg-neutral-900 flex flex-wrap gap-2 border-b border-neutral-800">
           <button
             onClick={() => {
               setActiveTab('transfer');
@@ -267,6 +268,25 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
           >
             <ArrowUpRight className="w-3.5 h-3.5" />
             <span>Transfer & Convert LBC to Assets</span>
+          </button>
+
+          <button
+            id="tab-btn-growth-projection"
+            onClick={() => {
+              setActiveTab('projection');
+              setSuccessMessage(null);
+            }}
+            className={`px-4 py-2 text-xs font-bold rounded-t-xl transition flex items-center gap-1.5 ${
+              activeTab === 'projection'
+                ? 'bg-neutral-950 text-amber-400 border-t-2 border-amber-400 border-x border-neutral-800'
+                : 'text-neutral-400 hover:text-white'
+            }`}
+          >
+            <TrendingUp className="w-3.5 h-3.5 text-amber-400" />
+            <span>Growth Projection</span>
+            <span className="px-1.5 py-0.2 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono border border-amber-400/40">
+              167 LBC / $1 USD
+            </span>
           </button>
 
           <button
@@ -465,11 +485,69 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
                     Regulated custodial clearing provided by SEC-registered and regional banking partners.
                   </p>
                 </div>
+
+                {/* Growth Projection Teaser Card */}
+                <div className="bg-neutral-900 border border-amber-400/30 rounded-2xl p-4 shadow-lg text-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-amber-400 font-bold">
+                      <TrendingUp className="w-4 h-4" />
+                      <span>Future Growth Projection</span>
+                    </div>
+                    <span className="text-[10px] font-mono text-neutral-400 bg-neutral-950 px-2 py-0.5 rounded border border-neutral-800">
+                      167 LBC = $1 USD
+                    </span>
+                  </div>
+
+                  <p className="text-neutral-300 text-[11px] leading-relaxed">
+                    Estimate your potential earnings over 30 days to 5 years based on daily ride/delivery volume and auto-compounding fleet dividends.
+                  </p>
+
+                  <button
+                    id="btn-open-proj-simulator"
+                    type="button"
+                    onClick={() => {
+                      setActiveTab('projection');
+                      setSuccessMessage(null);
+                      if (onPlaySpeech) {
+                        onPlaySpeech('Men kalkilatè kwasans Liberté Cash ou a. Gade konbyen ou ka akimile sou yon lane ak to 167 pou 1.');
+                      }
+                    }}
+                    className="w-full py-2 bg-neutral-950 hover:bg-neutral-850 border border-amber-400/40 text-amber-300 hover:text-amber-200 font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-xs shadow cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Open Growth Projection Simulator</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
 
-          {/* TAB 2: LBC TRANSACTION HISTORY */}
+          {/* TAB 2: GROWTH PROJECTION & WEALTH SIMULATOR */}
+          {activeTab === 'projection' && (
+            <div className="space-y-4">
+              <LbcGrowthProjectionWidget
+                initialPersona={
+                  selectedPersona === 'driver_moise'
+                    ? 'driver'
+                    : selectedPersona === 'merchant_chef_fifi'
+                    ? 'merchant'
+                    : 'customer'
+                }
+                currentBalanceLbc={currentWallet.balanceLbc}
+                onApplyGoalToTransfer={(targetLbc) => {
+                  setTransferAmountLbc(targetLbc);
+                  setActiveTab('transfer');
+                  setSuccessMessage(
+                    `Goal of ${targetLbc.toLocaleString()} LBC ($${(targetLbc * LBC_USD_PEG_RATE).toFixed(2)} USD) loaded into your transfer converter.`
+                  );
+                }}
+                onPlaySpeech={onPlaySpeech}
+              />
+            </div>
+          )}
+
+          {/* TAB 3: LBC TRANSACTION HISTORY */}
           {activeTab === 'history' && (
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-neutral-900 p-4 rounded-2xl border border-neutral-800">

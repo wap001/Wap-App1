@@ -29,7 +29,7 @@ import {
 interface CustomerLbcWalletQuickWidgetProps {
   userId?: string;
   userName?: string;
-  onOpenFullBrokerage?: () => void;
+  onOpenFullBrokerage?: (initialTab?: 'transfer' | 'projection' | 'history') => void;
   position?: 'top-right' | 'bottom-left' | 'relative';
 }
 
@@ -332,15 +332,25 @@ export const CustomerLbcWalletQuickWidget: React.FC<CustomerLbcWalletQuickWidget
 
       {/* Action Footer */}
       {onOpenFullBrokerage && (
-        <div className="mt-3 pt-2.5 border-t border-neutral-800">
+        <div className="mt-3 pt-2.5 border-t border-neutral-800 space-y-1.5">
           <button
             id="btn-quick-wallet-open-full-brokerage"
             type="button"
-            onClick={onOpenFullBrokerage}
+            onClick={() => onOpenFullBrokerage('transfer')}
             className="w-full py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs flex items-center justify-center gap-1.5 transition shadow cursor-pointer"
           >
-            <span>Open Full Brokerage & Stock Conversion</span>
+            <span>Open Full Brokerage &amp; Stock Conversion</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            id="btn-quick-wallet-open-projection"
+            type="button"
+            onClick={() => onOpenFullBrokerage('projection')}
+            className="w-full py-1.5 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-850 border border-amber-400/30 text-amber-300 hover:text-white font-medium text-[11px] flex items-center justify-center gap-1.5 transition cursor-pointer"
+          >
+            <TrendingUp className="w-3 h-3 text-amber-400" />
+            <span>Growth Projection (167 LBC = $1.00 USD)</span>
           </button>
         </div>
       )}

@@ -1,0 +1,7 @@
+# ==============================================================================
+# Wap Mobility - Fastlane Appfile (iOS)
+# ==============================================================================
+app_identifier("com.wapmobility.app") # The bundle identifier of your app
+apple_id(ENV["APPLE_ID"] || "devops@wapmobility.com") # Your Apple Developer Account email
+team_id(ENV["APPLE_TEAM_ID"] || "TEAM_ID_PLACEHOLDER") # Developer Portal Team ID
+itc_team_id(ENV["ITC_TEAM_ID"] || "ITC_TEAM_ID_PLACEHOLDER") # App Store Connect Team ID

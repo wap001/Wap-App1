@@ -1,0 +1,8 @@
+# ==============================================================================
+# Wap Mobility - Android Release Signing Configuration (key.properties)
+# NOTE: DO NOT COMMIT REAL KEYSTORE PASSWORDS OR SECRETS TO GIT
+# ==============================================================================
+storePassword=WapMobilityReleaseKey2026!
+keyPassword=WapMobilityReleaseKey2026!
+keyAlias=wap-upload-key
+storeFile=../wap-upload-key.jks

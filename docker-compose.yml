@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # 1. POSTGRESQL 15 + POSTGIS 3.3 GEOSPATIAL DATABASE
+  # ============================================================================
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: wap_postgis_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wap_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-WapSecurePassword2026!}
+      POSTGRES_DB: ${POSTGRES_DB:-wap_mobility_db}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      # Named persistent volume for zero data loss across container recreations
+      - postgres_data:/var/lib/postgresql/data
+      # SQL initialization scripts executed automatically on first startup
+      - ./deploy/init-db:/docker-entrypoint-initdb.d:ro
+    ports:
+      # Exposed locally only or bound to 127.0.0.1 for host security
+      - "127.0.0.1:5432:5432"
+    networks:
+      - wap_internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-wap_admin} -d ${POSTGRES_DB:-wap_mobility_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ============================================================================
+  # 2. NODE.JS / EXPRESS 4 API & SOCKET.IO REAL-TIME SERVER
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wap_api_server
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: postgresql://${POSTGRES_USER:-wap_admin}:${POSTGRES_PASSWORD:-WapSecurePassword2026!}@db:5432/${POSTGRES_DB:-wap_mobility_db}
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_wap_mobility_2026}
+      SOCKET_PORT: 3000
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN}
+      PAYMENT_GATEWAY_KEYS: ${PAYMENT_GATEWAY_KEYS}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://api.wapmobility.com,https://app.wapmobility.com}
+    ports:
+      - "127.0.0.1:3000:3000"
+    networks:
+      - wap_internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/health || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ============================================================================
+  # 3. NGINX REVERSE-PROXY WITH SSL & WEBSOCKET / SOCKET.IO UPGRADE HEADERS
+  # ============================================================================
+  nginx:
+    image: nginx:alpine
+    container_name: wap_nginx_proxy
+    restart: always
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - certbot_conf:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    networks:
+      - wap_internal_network
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ============================================================================
+  # 4. CERTBOT (LET'S ENCRYPT AUTOMATED SSL PROVISIONING & RENEWAL)
+  # ============================================================================
+  certbot:
+    image: certbot/certbot:latest
+    container_name: wap_certbot
+    restart: unless-stopped
+    volumes:
+      - certbot_conf:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+# ==============================================================================
+# VOLUMES & NETWORKS SPECIFICATION
+# ==============================================================================
+volumes:
+  postgres_data:
+    name: wap_postgres_data
+    driver: local
+  certbot_conf:
+    name: wap_certbot_conf
+    driver: local
+  certbot_www:
+    name: wap_certbot_www
+    driver: local
+
+networks:
+  wap_internal_network:
+    name: wap_internal_network
+    driver: bridge

@@ -1,0 +1,100 @@
+# ==============================================================================
+# Wap Mobility - Fastlane iOS Automation Pipeline (Fastfile)
+# Compiles, signs, and uploads iOS binaries (.ipa) to TestFlight & Firebase
+# ==============================================================================
+
+default_platform(:ios)
+
+platform :ios do
+  before_all do
+    # Ensure CocoaPods dependencies are locked and up-to-date
+    cocoapods(clean_install: false)
+  end
+
+  desc "Push a new staging build to Firebase App Distribution"
+  lane :staging do
+    # 1. Increment build number automatically
+    increment_build_number(
+      build_number: ENV["GITHUB_RUN_NUMBER"] || Time.now.strftime("%Y%m%d%H%M")
+    )
+
+    # 2. Match / Sign Certificates (Ad-Hoc for staging testers)
+    match(
+      type: "adhoc",
+      readonly: is_ci,
+      app_identifier: "com.wapmobility.app.staging"
+    )
+
+    # 3. Build & Archive .ipa with Gym
+    gym(
+      workspace: "Runner.xcworkspace",
+      scheme: "staging",
+      configuration: "Release-staging",
+      export_method: "ad-hoc",
+      clean: true,
+      output_directory: "./build/ios",
+      output_name: "WapMobility-Staging.ipa"
+    )
+
+    # 4. Upload to Firebase App Distribution
+    firebase_app_distribution(
+      app: ENV["FIREBASE_IOS_APP_ID"] || "1:123456789:ios:abcdef012345",
+      groups: "internal-qa,field-drivers-haiti,field-drivers-guyana",
+      release_notes: "Wap Mobility Staging Build. Telemetry and offline cash fixes.",
+      ipa_path: "./build/ios/WapMobility-Staging.ipa"
+    )
+  end
+
+  desc "Push a new beta build to Apple TestFlight"
+  lane :beta do
+    # 1. Synchronize App Store Distribution Certificates & Profiles
+    match(
+      type: "appstore",
+      readonly: is_ci,
+      app_identifier: "com.wapmobility.app"
+    )
+
+    # 2. Increment build number from TestFlight latest
+    increment_build_number(
+      build_number: latest_testflight_build_number + 1
+    )
+
+    # 3. Build and package .ipa
+    gym(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store",
+      clean: true,
+      output_directory: "./build/ios",
+      output_name: "WapMobility-Release.ipa"
+    )
+
+    # 4. Upload to Apple TestFlight
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      changelog: "Wap Mobility Release Candidate. PostGIS location and SOS integration."
+    )
+  end
+
+  desc "Deploy a new version to the Apple App Store"
+  lane :release do
+    match(type: "appstore", readonly: true)
+    gym(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      configuration: "Release",
+      export_method: "app-store"
+    )
+    upload_to_app_store(
+      force: true,
+      skip_screenshots: true,
+      skip_metadata: false
+    )
+  end
+
+  error do |lane, exception|
+    UI.error("Build failed in lane #{lane}: #{exception.message}")
+  end
+end

@@ -1,0 +1,10 @@
+{
+  "name": "Remix Wap - Motorcycle Rides \u0026 Delivery Platform",
+  "description": "On-demand motorcycle taxi and courier logistics platform designed for immigrant communities across Haiti, French Guiana, Guyana, and Suriname, Brazil, United States of America, Mexico, Guatemala, Honduras, Costa Rica, Panama, Equador, Buekina Fasi, Niger, Congo, Mali, South Africa, Mozambique, Madagascar, Benin, Senegal, Guinea konakry, Angola, Lybia. ",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

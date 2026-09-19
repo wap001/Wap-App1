@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- ======================================================================= -->
+	<!-- WAP MOBILITY - IOS APPLICATION CONFIGURATION (Info.plist)               -->
+	<!-- ======================================================================= -->
+	<key>CFBundleDevelopmentRegion</key>
+	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleDisplayName</key>
+	<string>Wap Mobility</string>
+	<key>CFBundleExecutable</key>
+	<string>$(EXECUTABLE_NAME)</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.wapmobility.app</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>wap_mobility</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0.0</string>
+	<key>CFBundleSignature</key>
+	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>10001</string>
+	<key>LSRequiresIPhoneOS</key>
+	<true/>
+
+	<!-- ======================================================================= -->
+	<!-- REQUIRED PRIVACY & PERMISSION DESCRIPTIONS                              -->
+	<!-- Apple App Store Review strictly mandates clear user-facing justification-->
+	<!-- ======================================================================= -->
+
+	<!-- 1. Location When In Use: Rider pickup pinpointing & fare estimation -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Wap Mobility needs access to your location while using the app to accurately pinpoint your pickup spot, calculate real-time route fares, and show nearby available drivers.</string>
+
+	<!-- 2. Location Always & When In Use: Real-time driver telemetry & safety tracking -->
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Continuous location access is required for drivers to receive nearby ride requests and for riders to share live trip progress and SOS tracking with emergency contacts even when the app is minimized.</string>
+
+	<!-- 3. Legacy Location Always (iOS 10 fallback) -->
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Continuous background location enables uninterrupted driver telemetry and safety SOS tracking during active rides.</string>
+
+	<!-- 4. Camera Permission: Driver document scanning & identity verification -->
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to take clear photos of your driver's license, vehicle registration, and complete KYC identity verification.</string>
+
+	<!-- 5. Photo Library Permission: Upload existing documents or receipt screenshots -->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access allows you to upload existing vehicle documentation, profile avatars, and payment receipts.</string>
+
+	<!-- ======================================================================= -->
+	<!-- BACKGROUND MODES (Active Navigation & Turn-by-Turn GPS)                -->
+	<!-- ======================================================================= -->
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+		<string>fetch</string>
+		<string>remote-notification</string>
+		<string>processing</string>
+	</array>
+
+	<!-- App Store Export Compliance: No proprietary non-exempt encryption algorithms used -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+
+	<!-- High Resolution / Retina Asset Rendering -->
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<true/>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
+</dict>
+</plist>

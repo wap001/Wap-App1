@@ -23,12 +23,17 @@ import {
   ArrowUpRight,
   History,
   Store,
-  ShieldAlert
+  ShieldAlert,
+  LogIn,
+  LogOut,
+  Sparkles,
+  User
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
+import { AuthUserData } from './WelcomeLandingInterface';
 
 export type ActiveRole = 'customer' | 'driver' | 'merchant' | 'admin';
 
@@ -68,6 +73,10 @@ interface HeaderProps {
   isAudioPlaying: boolean;
   activeTab?: ActiveTabId;
   onSelectTab?: (tab: ActiveTabId) => void;
+  currentUser?: AuthUserData | null;
+  isWelcomeActive?: boolean;
+  onToggleWelcome?: () => void;
+  onSignOut?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -83,6 +92,10 @@ export const Header: React.FC<HeaderProps> = ({
   isAudioPlaying,
   activeTab,
   onSelectTab,
+  currentUser,
+  isWelcomeActive,
+  onToggleWelcome,
+  onSignOut,
 }) => {
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
@@ -238,6 +251,43 @@ export const Header: React.FC<HeaderProps> = ({
               ))}
             </select>
           </div>
+
+          {/* User Auth Status / Welcome & Sign In Button */}
+          {currentUser ? (
+            <div className="flex items-center gap-1.5 bg-neutral-800 border border-neutral-700 rounded-md py-0.5 px-2">
+              <User className="w-3 h-3 text-amber-400 shrink-0" />
+              <div className="max-w-[120px] truncate text-[11px] font-semibold text-white">
+                {currentUser.name}
+              </div>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-neutral-950 font-bold hidden sm:inline">
+                {currentUser.role.toUpperCase()}
+              </span>
+              <button
+                id="header-signout-btn"
+                type="button"
+                onClick={onSignOut}
+                className="ml-1 text-neutral-400 hover:text-red-300 p-0.5 transition cursor-pointer"
+                title="Sign out of account"
+              >
+                <LogOut className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              id="header-welcome-login-btn"
+              type="button"
+              onClick={onToggleWelcome}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border ${
+                isWelcomeActive
+                  ? 'bg-amber-400 text-neutral-950 border-amber-300 shadow'
+                  : 'bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-neutral-950 border-amber-400 shadow'
+              }`}
+              title="Open Welcome Portal & Subscription / Login"
+            >
+              <LogIn className="w-3.5 h-3.5" />
+              <span>{isWelcomeActive ? 'Welcome Portal' : 'Sign In / Subscribe'}</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -250,6 +300,26 @@ export const Header: React.FC<HeaderProps> = ({
               Select Role:
             </span>
 
+            {/* 0. Welcome & Subscription Portal Tab */}
+            <button
+              id="role-tab-welcome"
+              type="button"
+              onClick={onToggleWelcome}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                isWelcomeActive
+                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
+                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+              }`}
+            >
+              <Sparkles className={`w-4 h-4 ${isWelcomeActive ? 'text-neutral-950' : 'text-amber-400'}`} />
+              <div className="text-left">
+                <div className="leading-tight">Welcome Portal</div>
+                <div className={`text-[10px] ${isWelcomeActive ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                  Subscription &amp; Login
+                </div>
+              </div>
+            </button>
+
             {/* 1. Customer Role */}
             <button
               id="role-tab-customer"
@@ -259,7 +329,7 @@ export const Header: React.FC<HeaderProps> = ({
                 if (onSelectTab) onSelectTab('customer');
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-                activeRole === 'customer'
+                !isWelcomeActive && activeRole === 'customer'
                   ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
                   : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
               }`}
@@ -282,15 +352,15 @@ export const Header: React.FC<HeaderProps> = ({
                 if (onSelectTab) onSelectTab('driver');
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-                activeRole === 'driver'
+                !isWelcomeActive && activeRole === 'driver'
                   ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
                   : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
               }`}
             >
-              <Bike className={`w-4 h-4 ${activeRole === 'driver' ? 'text-neutral-950' : 'text-emerald-400'}`} />
+              <Bike className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'driver' ? 'text-neutral-950' : 'text-emerald-400'}`} />
               <div className="text-left">
                 <div className="leading-tight">Driver Partner</div>
-                <div className={`text-[10px] ${activeRole === 'driver' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'driver' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
                   Radar &amp; Earnings
                 </div>
               </div>
@@ -305,15 +375,15 @@ export const Header: React.FC<HeaderProps> = ({
                 if (onSelectTab) onSelectTab('merchant');
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-                activeRole === 'merchant'
+                !isWelcomeActive && activeRole === 'merchant'
                   ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
                   : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
               }`}
             >
-              <Store className={`w-4 h-4 ${activeRole === 'merchant' ? 'text-neutral-950' : 'text-cyan-400'}`} />
+              <Store className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'merchant' ? 'text-neutral-950' : 'text-cyan-400'}`} />
               <div className="text-left">
                 <div className="leading-tight">Merchant Portal</div>
-                <div className={`text-[10px] ${activeRole === 'merchant' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'merchant' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
                   Boutik &amp; Resto Orders
                 </div>
               </div>
@@ -328,7 +398,7 @@ export const Header: React.FC<HeaderProps> = ({
                 if (onSelectTab) onSelectTab('admin');
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-                activeRole === 'admin'
+                !isWelcomeActive && activeRole === 'admin'
                   ? 'bg-red-500 text-white shadow-md font-bold ring-2 ring-red-400/40'
                   : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
               }`}

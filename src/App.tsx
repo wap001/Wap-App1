@@ -25,6 +25,7 @@ import { DriverInterface } from './components/DriverInterface';
 import { VendorInterface } from './components/VendorInterface';
 import { AdminPanelWorkspace, AdminSectionId } from './components/AdminPanelWorkspace';
 import { FloatingSOSButton } from './components/FloatingSOSButton';
+import { WelcomeLandingInterface, AuthUserData } from './components/WelcomeLandingInterface';
 import { translations } from './data/translations';
 import { REGIONS } from './data/mockData';
 
@@ -38,6 +39,30 @@ export default function App() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioTranscript, setAudioTranscript] = useState<string | null>(null);
   const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
+
+  // Authenticated user session state (initialized from localStorage)
+  const [currentUser, setCurrentUser] = useState<AuthUserData | null>(() => {
+    try {
+      const saved = localStorage.getItem('wap_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Welcome Landing Interface display state
+  const [isWelcomeActive, setIsWelcomeActive] = useState<boolean>(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('view') === 'welcome') return true;
+      if (params.get('role')) return false;
+      const saved = localStorage.getItem('wap_auth_user');
+      // If no saved user session and no specific role deep link, present the Welcome Interface
+      return !saved;
+    } catch {
+      return true;
+    }
+  });
 
   // Sync role and region from URL search params on mount
   useEffect(() => {
@@ -137,11 +162,13 @@ export default function App() {
   const handleSelectRole = (role: ActiveRole) => {
     setActiveRole(role);
     setActiveTab(role);
+    setIsWelcomeActive(false);
     updateUrlForRole(role);
   };
 
   const handleSelectTab = (tab: ActiveTabId) => {
     setActiveTab(tab);
+    setIsWelcomeActive(false);
     if (tab === 'customer' || tab === 'simulator') {
       setActiveRole('customer');
       updateUrlForRole('customer');
@@ -172,6 +199,35 @@ export default function App() {
     }
   };
 
+  const handleLoginSuccess = (userData: AuthUserData) => {
+    setCurrentUser(userData);
+    setActiveRole(userData.role);
+    setActiveTab(userData.role);
+    setIsWelcomeActive(false);
+    updateUrlForRole(userData.role);
+  };
+
+  const handleGuestContinue = (role: ActiveRole) => {
+    setActiveRole(role);
+    setActiveTab(role);
+    setIsWelcomeActive(false);
+    updateUrlForRole(role);
+  };
+
+  const handleSignOut = () => {
+    try {
+      localStorage.removeItem('wap_auth_user');
+    } catch {
+      // safe fallback
+    }
+    setCurrentUser(null);
+    setIsWelcomeActive(true);
+  };
+
+  const handleToggleWelcome = () => {
+    setIsWelcomeActive((prev) => !prev);
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950">
       {/* Global Header with Role-Specific Navigation */}
@@ -188,7 +244,35 @@ export default function App() {
         onSelectTab={handleSelectTab}
         onPlayVoiceGuide={handleGlobalVoiceGuide}
         isAudioPlaying={isAudioPlaying}
+        currentUser={currentUser}
+        isWelcomeActive={isWelcomeActive}
+        onToggleWelcome={handleToggleWelcome}
+        onSignOut={handleSignOut}
       />
+
+      {/* Authenticated User Quick Info Banner */}
+      {currentUser && !isWelcomeActive && (
+        <div className="bg-neutral-900/90 border-b border-amber-500/20 px-4 py-1.5 text-xs text-neutral-300">
+          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+              <span>
+                Signed in as <strong className="text-white">{currentUser.name}</strong> ({currentUser.email})
+              </span>
+              <span className="text-amber-400 font-semibold">• {currentUser.subscriptionName}</span>
+              <span className="text-neutral-400 hidden sm:inline">• {currentUser.lbcBonus} LBC Freedom Balance</span>
+            </div>
+            <button
+              id="top-welcome-portal-link"
+              type="button"
+              onClick={handleToggleWelcome}
+              className="text-amber-400 hover:text-amber-300 hover:underline font-semibold text-xs cursor-pointer"
+            >
+              Subscription &amp; Welcome Portal →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Voice Prompt Live HUD Subtitle */}
       {audioTranscript && (
@@ -235,9 +319,20 @@ export default function App() {
         </div>
       </div>
 
-      {/* Main Content Area: Strictly Render Current User Role Interface */}
-      <main className={`flex-1 w-full mx-auto p-3 sm:p-6 lg:p-8 ${isMobileFrameMode && activeRole !== 'admin' ? 'max-w-[460px]' : 'max-w-7xl'}`}>
-        {isMobileFrameMode && activeRole !== 'admin' ? (
+      {/* Main Content Area */}
+      <main className={`flex-1 w-full mx-auto p-3 sm:p-6 lg:p-8 ${!isWelcomeActive && isMobileFrameMode && activeRole !== 'admin' ? 'max-w-[460px]' : 'max-w-7xl'}`}>
+        {isWelcomeActive ? (
+          /* Welcome Landing Interface: Subscriptions & Email/Password Login */
+          <WelcomeLandingInterface
+            currentRegion={selectedRegion}
+            currentLanguage={selectedLanguage}
+            onSelectRegion={handleSelectRegion}
+            onSelectLanguage={setSelectedLanguage}
+            onPlaySpeech={handlePlaySpeech}
+            onLoginSuccess={handleLoginSuccess}
+            onGuestContinue={handleGuestContinue}
+          />
+        ) : isMobileFrameMode && activeRole !== 'admin' ? (
           <div className="relative rounded-[40px] border-4 border-neutral-800 bg-neutral-950 shadow-2xl overflow-hidden p-2 sm:p-3 ring-1 ring-neutral-700/50">
             {/* Simulated Phone Top Notch & Status Bar */}
             <div className="h-6 w-full flex items-center justify-between px-5 text-[10px] font-mono text-neutral-400 select-none pb-2 border-b border-neutral-900">

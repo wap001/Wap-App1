@@ -85,6 +85,7 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
   const [recentTrade, setRecentTrade] = useState<BrokerageConversionTrade | null>(null);
   const [isConverting, setIsConverting] = useState<boolean>(false);
   const [tradeSuccessMsg, setTradeSuccessMsg] = useState<string | null>(null);
+  const [tradeErrorMsg, setTradeErrorMsg] = useState<string | null>(null);
 
   // Sub-tab view in this module
   const [mainViewTab, setMainViewTab] = useState<
@@ -379,17 +380,20 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
   // Execute embedded brokerage conversion
   const handleExecuteBrokerageConversion = async () => {
     if (convertAmountLbc <= 0 || convertAmountLbc > currentWallet.balanceLbc) {
-      alert(`Invalid conversion amount. Available balance: ${currentWallet.balanceLbc} LBC`);
+      setTradeErrorMsg(`Invalid conversion amount. Available balance: ${currentWallet.balanceLbc} LBC`);
+      setTimeout(() => setTradeErrorMsg(null), 5000);
       return;
     }
 
     if (convertAmountLbc < selectedAsset.minLbcToConvert) {
-      alert(`Minimum conversion for ${selectedAsset.ticker} is ${selectedAsset.minLbcToConvert} LBC.`);
+      setTradeErrorMsg(`Minimum conversion for ${selectedAsset.ticker} is ${selectedAsset.minLbcToConvert} LBC.`);
+      setTimeout(() => setTradeErrorMsg(null), 5000);
       return;
     }
 
     setIsConverting(true);
     setTradeSuccessMsg(null);
+    setTradeErrorMsg(null);
 
     const usdValue = convertAmountLbc * LBC_USD_PEG_RATE;
     const unitsAcquired = parseFloat((usdValue / selectedAsset.priceUsd).toFixed(4));
@@ -1328,6 +1332,13 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
 
               {/* Submit Execution Action */}
               <div>
+                {tradeErrorMsg && (
+                  <div className="p-3 bg-red-950/80 border border-red-800 rounded-xl text-xs text-red-300 mb-3 flex items-start gap-2">
+                    <div className="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0" />
+                    <span>{tradeErrorMsg}</span>
+                  </div>
+                )}
+
                 {tradeSuccessMsg && (
                   <div className="p-3 bg-emerald-950/80 border border-emerald-800 rounded-xl text-xs text-emerald-300 mb-3 flex items-start gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />

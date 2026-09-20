@@ -20,7 +20,7 @@ import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 
 interface FloatingSOSButtonProps {
-  role: 'customer' | 'driver' | 'vendor';
+  role: 'customer' | 'driver' | 'vendor' | 'merchant' | 'admin';
   region: RegionId;
   language: LanguageCode;
   userName: string;
@@ -194,21 +194,20 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
   };
 
   const positionClasses =
-    position === 'top-right'
-      ? 'fixed top-20 right-4 sm:right-6 z-40 flex flex-col items-end gap-1.5'
-      : position === 'relative'
-      ? 'relative flex flex-col items-end gap-1.5'
-      : 'fixed bottom-6 right-6 z-40 flex flex-col items-end gap-1.5';
+    position === 'relative'
+      ? 'relative inline-flex items-center gap-1.5'
+      : 'fixed bottom-3 right-3 sm:bottom-4 sm:right-4 z-40 flex items-center gap-1.5';
 
   return (
     <>
-      {/* Floating Action Button (FAB) */}
+      {/* Minimized Non-Obstructive Floating Action Button (FAB) */}
       <div className={positionClasses}>
-        {/* Urgent beacon badge if currently active */}
+        {/* Compact status badge when SOS distress beacon is actively broadcasting */}
         {sosActive && (
-          <div className="bg-red-950/90 text-red-200 border border-red-500/80 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-2 shadow-lg animate-bounce">
-            <span className="w-2 h-2 rounded-full bg-red-400 animate-ping" />
-            <span>GPS BROADCAST ACTIVE ({beaconId})</span>
+          <div className="bg-red-950/95 text-red-200 border border-red-500/80 px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1.5 shadow-md animate-pulse">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-400 animate-ping shrink-0" />
+            <span className="hidden sm:inline">SOS Active</span>
+            <span className="font-mono">{beaconId.split('-').slice(-1)[0]}</span>
           </div>
         )}
 
@@ -221,31 +220,24 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
               initiateSOSCountdown();
             }
           }}
-          className={`group relative flex items-center gap-2.5 px-4 py-3 rounded-full font-black text-sm transition-all duration-300 shadow-2xl border-2 cursor-pointer ${
+          className={`group relative flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-full font-bold text-xs transition-all duration-200 shadow-md border cursor-pointer select-none ${
             sosActive
-              ? 'bg-red-600 hover:bg-red-500 text-white border-red-300 ring-4 ring-red-500/50 animate-pulse'
-              : 'bg-red-600 hover:bg-red-700 text-white border-red-400/80 hover:scale-105 active:scale-95 shadow-red-900/50'
+              ? 'bg-red-600 hover:bg-red-500 text-white border-red-300 ring-2 ring-red-400/60 animate-pulse'
+              : 'bg-red-600/95 hover:bg-red-600 text-white border-red-400/70 hover:shadow-lg active:scale-95'
           }`}
           title="Emergency SOS / Ijans / Urgence"
         >
-          {/* Radar ping halo animation */}
-          <span className="absolute -inset-1 rounded-full bg-red-500/30 animate-ping pointer-events-none" />
-
-          <div className="relative flex items-center justify-center w-6 h-6 rounded-full bg-white/20 text-white">
-            <ShieldAlert className="w-4 h-4" />
+          <div className="flex items-center justify-center text-white shrink-0">
+            <ShieldAlert className="w-3.5 h-3.5" />
           </div>
 
-          <div className="flex flex-col items-start leading-tight">
-            <span className="tracking-wider text-xs font-black flex items-center gap-1">
-              SOS
-              <span className="text-[10px] opacity-80 uppercase tracking-normal font-semibold">
-                • {role === 'driver' ? 'Driver' : 'Passenger'}
-              </span>
-            </span>
-            <span className="text-[10px] text-red-100 font-normal">
-              {sosActive ? 'Distress Active' : 'Emergency Help'}
-            </span>
-          </div>
+          <span className="tracking-wider uppercase font-black text-[10px] leading-none">
+            SOS
+          </span>
+
+          {sosActive && (
+            <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping shrink-0" />
+          )}
         </button>
       </div>
 

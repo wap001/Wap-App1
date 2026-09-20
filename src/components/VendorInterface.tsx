@@ -20,7 +20,6 @@ import {
 import { RegionId, LanguageCode, VendorProfile } from '../types/architecture';
 import { REGIONS, MOCK_VENDORS } from '../data/mockData';
 import { translations } from '../data/translations';
-import { FloatingSOSButton } from './FloatingSOSButton';
 
 interface VendorInterfaceProps {
   region: RegionId;
@@ -337,17 +336,6 @@ export const VendorInterface: React.FC<VendorInterfaceProps> = ({
           </div>
         </div>
       )}
-
-      {/* Persistent Floating SOS Emergency Button (Top-Right aligned) */}
-      <FloatingSOSButton
-        role="vendor"
-        region={region}
-        language={language}
-        userName={vendor.name}
-        currentLandmark={vendor.addressLandmark}
-        onPlaySpeech={onPlaySpeech}
-        position="top-right"
-      />
     </div>
   );
 };

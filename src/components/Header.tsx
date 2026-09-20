@@ -21,14 +21,22 @@ import {
   Terminal,
   Coins,
   ArrowUpRight,
-  History
+  History,
+  Store,
+  ShieldAlert
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 
+export type ActiveRole = 'customer' | 'driver' | 'merchant' | 'admin';
+
 export type ActiveTabId =
+  | 'customer'
+  | 'driver'
+  | 'merchant'
+  | 'admin'
   | 'simulator'
   | 'marketplace-lbc'
   | 'mobile-studio'
@@ -36,7 +44,6 @@ export type ActiveTabId =
   | 'api-dispatch'
   | 'qa-automation'
   | 'devops'
-  | 'admin'
   | 'pricing'
   | 'cms'
   | 'verification'
@@ -55,10 +62,12 @@ interface HeaderProps {
   onSelectLanguage: (l: LanguageCode) => void;
   networkMode: 'online' | 'edge' | 'offline';
   onToggleNetworkMode: () => void;
-  activeTab: ActiveTabId;
-  onSelectTab: (tab: ActiveTabId) => void;
+  activeRole: ActiveRole;
+  onSelectRole: (role: ActiveRole) => void;
   onPlayVoiceGuide: () => void;
   isAudioPlaying: boolean;
+  activeTab?: ActiveTabId;
+  onSelectTab?: (tab: ActiveTabId) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -68,10 +77,12 @@ export const Header: React.FC<HeaderProps> = ({
   onSelectLanguage,
   networkMode,
   onToggleNetworkMode,
-  activeTab,
-  onSelectTab,
+  activeRole,
+  onSelectRole,
   onPlayVoiceGuide,
   isAudioPlaying,
+  activeTab,
+  onSelectTab,
 }) => {
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
@@ -230,244 +241,148 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 flex overflow-x-auto gap-1.5 border-t border-neutral-800/80 py-1.5 no-scrollbar text-xs">
-        <button
-          id="nav-tab-simulator"
-          onClick={() => onSelectTab('simulator')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'simulator'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Bike className="w-3.5 h-3.5" />
-          <span>Interactive Apps</span>
-        </button>
+      {/* Role-Specific Navigation Architecture */}
+      <div className="border-t border-neutral-800/90 bg-neutral-950/70">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Main Role Selector Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider shrink-0 hidden sm:inline">
+              Select Role:
+            </span>
 
-        <button
-          id="nav-tab-marketplace-lbc"
-          onClick={() => onSelectTab('marketplace-lbc')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'marketplace-lbc'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Coins className="w-3.5 h-3.5 text-amber-400" />
-          <span>3-Sided & LBC Token Brokerage</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-        </button>
+            {/* 1. Customer Role */}
+            <button
+              id="role-tab-customer"
+              type="button"
+              onClick={() => {
+                onSelectRole('customer');
+                if (onSelectTab) onSelectTab('customer');
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                activeRole === 'customer'
+                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
+                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+              }`}
+            >
+              <Smartphone className={`w-4 h-4 ${activeRole === 'customer' ? 'text-neutral-950' : 'text-amber-400'}`} />
+              <div className="text-left">
+                <div className="leading-tight">Customer App</div>
+                <div className={`text-[10px] ${activeRole === 'customer' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                  Rides, Food &amp; Courier
+                </div>
+              </div>
+            </button>
 
-        <button
-          id="nav-tab-mobile-studio"
-          onClick={() => onSelectTab('mobile-studio')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'mobile-studio'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-          <span>Mobile UI/UX Studio & Code</span>
-        </button>
+            {/* 2. Driver Role */}
+            <button
+              id="role-tab-driver"
+              type="button"
+              onClick={() => {
+                onSelectRole('driver');
+                if (onSelectTab) onSelectTab('driver');
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                activeRole === 'driver'
+                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
+                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+              }`}
+            >
+              <Bike className={`w-4 h-4 ${activeRole === 'driver' ? 'text-neutral-950' : 'text-emerald-400'}`} />
+              <div className="text-left">
+                <div className="leading-tight">Driver Partner</div>
+                <div className={`text-[10px] ${activeRole === 'driver' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                  Radar &amp; Earnings
+                </div>
+              </div>
+            </button>
 
-        <button
-          id="nav-tab-mobile-build"
-          onClick={() => onSelectTab('mobile-build')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'mobile-build'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Terminal className="w-3.5 h-3.5 text-amber-400" />
-          <span>Mobile Build Engineer</span>
-        </button>
+            {/* 3. Merchant Role */}
+            <button
+              id="role-tab-merchant"
+              type="button"
+              onClick={() => {
+                onSelectRole('merchant');
+                if (onSelectTab) onSelectTab('merchant');
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                activeRole === 'merchant'
+                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
+                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+              }`}
+            >
+              <Store className={`w-4 h-4 ${activeRole === 'merchant' ? 'text-neutral-950' : 'text-cyan-400'}`} />
+              <div className="text-left">
+                <div className="leading-tight">Merchant Portal</div>
+                <div className={`text-[10px] ${activeRole === 'merchant' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                  Boutik &amp; Resto Orders
+                </div>
+              </div>
+            </button>
 
-        <button
-          id="nav-tab-api-dispatch"
-          onClick={() => onSelectTab('api-dispatch')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'api-dispatch'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Server className="w-3.5 h-3.5 text-amber-400" />
-          <span>Backend & PostGIS APIs</span>
-        </button>
+            {/* 4. Administration Panel Role */}
+            <button
+              id="role-tab-admin"
+              type="button"
+              onClick={() => {
+                onSelectRole('admin');
+                if (onSelectTab) onSelectTab('admin');
+              }}
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
+                activeRole === 'admin'
+                  ? 'bg-red-500 text-white shadow-md font-bold ring-2 ring-red-400/40'
+                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+              }`}
+            >
+              <ShieldAlert className={`w-4 h-4 ${activeRole === 'admin' ? 'text-white' : 'text-red-400'}`} />
+              <div className="text-left">
+                <div className="leading-tight flex items-center gap-1.5">
+                  <span>Administration Panel</span>
+                  <span className="text-[9px] font-mono px-1 py-0.2 bg-red-950 text-red-300 rounded border border-red-800">
+                    Restricted
+                  </span>
+                </div>
+                <div className={`text-[10px] ${activeRole === 'admin' ? 'text-red-100 font-medium' : 'text-neutral-400'}`}>
+                  Fleet, KYC, APIs &amp; DevOps
+                </div>
+              </div>
+            </button>
+          </div>
 
-        <button
-          id="nav-tab-qa-automation"
-          onClick={() => onSelectTab('qa-automation')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'qa-automation'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-          <span>QA E2E Dry-Run</span>
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-        </button>
-
-        <button
-          id="nav-tab-devops"
-          onClick={() => onSelectTab('devops')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'devops'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Cloud className="w-3.5 h-3.5 text-amber-400" />
-          <span>Cloud DevOps & Docker</span>
-        </button>
-
-        <button
-          id="nav-tab-admin"
-          onClick={() => onSelectTab('admin')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'admin'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5 text-amber-400" />
-          <span>Admin Operations & Heatmaps</span>
-        </button>
-
-        <button
-          id="nav-tab-cms"
-          onClick={() => onSelectTab('cms')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'cms'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Languages className="w-3.5 h-3.5" />
-          <span>Multilingual CMS</span>
-        </button>
-
-        <button
-          id="nav-tab-verification"
-          onClick={() => onSelectTab('verification')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'verification'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <UserCheck className="w-3.5 h-3.5" />
-          <span>Profile Verification & Vouches</span>
-        </button>
-
-        <button
-          id="nav-tab-pricing"
-          onClick={() => onSelectTab('pricing')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'pricing'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <TrendingUp className="w-3.5 h-3.5" />
-          <span>Dynamic Pricing Engine</span>
-        </button>
-
-        <button
-          id="nav-tab-onboarding"
-          onClick={() => onSelectTab('onboarding')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'onboarding'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <FileCheck className="w-3.5 h-3.5" />
-          <span>Onboarding Pipelines</span>
-        </button>
-
-        <button
-          id="nav-tab-expansion"
-          onClick={() => onSelectTab('expansion')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'expansion'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <CreditCard className="w-3.5 h-3.5" />
-          <span>Expansion Rails & Support</span>
-        </button>
-
-        <button
-          id="nav-tab-architecture"
-          onClick={() => onSelectTab('architecture')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'architecture'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <ShieldCheck className="w-3.5 h-3.5" />
-          <span>Topology & Arch</span>
-        </button>
-
-        <button
-          id="nav-tab-database"
-          onClick={() => onSelectTab('database')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'database'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Database className="w-3.5 h-3.5" />
-          <span>Database & PostGIS</span>
-        </button>
-
-        <button
-          id="nav-tab-maps"
-          onClick={() => onSelectTab('maps')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'maps'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <Navigation className="w-3.5 h-3.5" />
-          <span>Maps & Routes</span>
-        </button>
-
-        <button
-          id="nav-tab-payments"
-          onClick={() => onSelectTab('payments')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'payments'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <CreditCard className="w-3.5 h-3.5" />
-          <span>MonCash & COD</span>
-        </button>
-
-        <button
-          id="nav-tab-offline"
-          onClick={() => onSelectTab('offline')}
-          className={`px-3 py-1.5 rounded-lg font-medium whitespace-nowrap transition-all flex items-center gap-1.5 ${
-            activeTab === 'offline'
-              ? 'bg-amber-400 text-neutral-950 shadow-sm font-semibold'
-              : 'text-neutral-300 hover:text-white hover:bg-neutral-800'
-          }`}
-        >
-          <WifiOff className="w-3.5 h-3.5" />
-          <span>Offline & USSD</span>
-        </button>
-      </nav>
+          {/* Role Status Pill */}
+          <div className="flex items-center gap-2 text-xs shrink-0 bg-neutral-900 border border-neutral-800 px-3 py-1.5 rounded-xl">
+            {activeRole === 'customer' && (
+              <div className="flex items-center gap-2 text-neutral-300">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                <span className="font-semibold text-white">Passenger Mode:</span>
+                <span className="text-neutral-400">Customer booking &amp; LBC wallet features</span>
+              </div>
+            )}
+            {activeRole === 'driver' && (
+              <div className="flex items-center gap-2 text-neutral-300">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="font-semibold text-white">Driver Partner:</span>
+                <span className="text-emerald-400 font-bold">4.92 ★</span>
+                <span className="text-neutral-400 hidden lg:inline">• 0% predatory deductions</span>
+              </div>
+            )}
+            {activeRole === 'merchant' && (
+              <div className="flex items-center gap-2 text-neutral-300">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                <span className="font-semibold text-white">Merchant Partner:</span>
+                <span className="text-cyan-400 font-bold">0% Card Swipe Fees</span>
+                <span className="text-neutral-400 hidden lg:inline">• Instant Moto Dispatch</span>
+              </div>
+            )}
+            {activeRole === 'admin' && (
+              <div className="flex items-center gap-2 text-neutral-300">
+                <span className="w-2 h-2 rounded-full bg-red-400 animate-pulse" />
+                <span className="font-semibold text-white">Staff Clearance Level 4:</span>
+                <span className="text-amber-400 font-mono">Backend Admin Controls Active</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Embedded Brokerage API Integration Overlay & LBC Transaction History */}
       <BrokerageIntegrationOverlay

@@ -32,13 +32,13 @@ import {
   ChevronRight,
   X,
   Calendar,
-  Flame
+  Flame,
+  Sparkles
 } from 'lucide-react';
 import { RegionId, LanguageCode, DriverRideHistoryItem } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS, INITIAL_DRIVER_RIDE_HISTORY } from '../data/mockData';
 import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, COUNTRY_LOOKUP } from '../data/internationalData';
 import { translations } from '../data/translations';
-import { FloatingSOSButton } from './FloatingSOSButton';
 import { DriverSafetyKitModal } from './DriverSafetyKitModal';
 import { RideDemandHeatMap } from './RideDemandHeatMap';
 import { VehicleClass, DriverDocumentUpload, NavigationManeuver } from '../types/internationalScope';
@@ -71,6 +71,12 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
   const [tripState, setTripState] = useState<'idle' | 'accepted' | 'arrived_pickup' | 'in_trip' | 'payment'>('idle');
   const [hasIncomingRequest, setHasIncomingRequest] = useState(false);
   const [cashCollected, setCashCollected] = useState(false);
+  const [driverToast, setDriverToast] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setDriverToast(msg);
+    setTimeout(() => setDriverToast(null), 4000);
+  };
 
   // OTP Verification Feature
   const [enteredOtp, setEnteredOtp] = useState<string>('');
@@ -269,13 +275,13 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
 
                   <div className="flex gap-2 pt-1 border-t border-neutral-900">
                     <button
-                      onClick={() => alert(`Viewing document: ${doc.fileName}`)}
+                      onClick={() => showToast(`Viewing document: ${doc.fileName}`)}
                       className="flex-1 py-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 font-semibold text-[11px]"
                     >
                       View Photo
                     </button>
                     <button
-                      onClick={() => alert(`Re-upload prompt for ${doc.title}`)}
+                      onClick={() => showToast(`Re-upload prompt for ${doc.title}`)}
                       className="flex-1 py-1.5 rounded-lg bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-[11px] flex items-center justify-center gap-1"
                     >
                       <Upload className="w-3 h-3" /> Re-upload
@@ -598,7 +604,8 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
             id="btn-driver-online-toggle"
             onClick={() => {
               if (isExcluded) {
-                alert('Cannot go online: Service is strictly prohibited in Argentina and Uruguay.');
+                showToast('Cannot go online: Service is strictly prohibited in Argentina and Uruguay.');
+                onPlaySpeech('Sèvis Wap la pa disponib nan zòn sa a.');
                 return;
               }
               setIsOnline(!isOnline);
@@ -1036,7 +1043,7 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
             currencyCode={currentCountry.currencyCode}
             currencySymbol={currentCountry.currencySymbol}
             onSelectCorridor={(corridor) => {
-              alert(`Corridor targeted: ${corridor.corridorName}. Heading towards ${corridor.pickupHotspot}!`);
+              showToast(`Corridor targeted: ${corridor.corridorName}. Heading towards ${corridor.pickupHotspot}!`);
               setDriverViewMode('radar');
             }}
           />
@@ -1295,16 +1302,13 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
         onPlaySpeech={onPlaySpeech}
       />
 
-      {/* Persistent Floating SOS Emergency Button (Top-Right aligned) */}
-      <FloatingSOSButton
-        role="driver"
-        region={region}
-        language={language}
-        userName={driver.fullName}
-        currentLandmark="Delmas 33 route intersection"
-        onPlaySpeech={onPlaySpeech}
-        position="top-right"
-      />
+      {/* Toast Notification Container (Positioned safely above minimized SOS corner button) */}
+      {driverToast && (
+        <div className="fixed bottom-14 right-4 sm:bottom-16 sm:right-4 z-50 bg-neutral-900 border border-amber-400 text-white px-4 py-3 rounded-2xl shadow-2xl text-xs font-semibold flex items-center gap-2.5 max-w-sm animate-bounce">
+          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="leading-snug">{driverToast}</span>
+        </div>
+      )}
     </div>
   );
 };

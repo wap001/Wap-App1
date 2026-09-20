@@ -14,27 +14,12 @@ import {
 } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { RegionId, LanguageCode } from './types/architecture';
-import { Header, ActiveTabId } from './components/Header';
+import { Header, ActiveTabId, ActiveRole } from './components/Header';
 import { CustomerInterface } from './components/CustomerInterface';
 import { DriverInterface } from './components/DriverInterface';
 import { VendorInterface } from './components/VendorInterface';
-import { ArchitectureView } from './components/ArchitectureView';
-import { DatabaseSchemaView } from './components/DatabaseSchemaView';
-import { GoogleMapsIntegrationView } from './components/GoogleMapsIntegrationView';
-import { PaymentsIntegrationView } from './components/PaymentsIntegrationView';
-import { OfflineSyncView } from './components/OfflineSyncView';
-import { MultilingualCMSView } from './components/MultilingualCMSView';
-import { VerificationSystemView } from './components/VerificationSystemView';
-import { DynamicPricingView } from './components/DynamicPricingView';
-import { AdminOperationsConsole } from './components/AdminOperationsConsole';
-import { MobileAppDesignStudio } from './components/MobileAppDesignStudio';
-import { MobileBuildEngineerView } from './components/MobileBuildEngineerView';
-import { BackendApiDispatchView } from './components/BackendApiDispatchView';
-import { QaAutomationSuiteView } from './components/QaAutomationSuiteView';
-import { DevOpsDeploymentView } from './components/DevOpsDeploymentView';
-import { OnboardingPipelinesView } from './components/OnboardingPipelinesView';
-import { PaymentExpansionSupportView } from './components/PaymentExpansionSupportView';
-import { MarketplaceLbcBrokerageView } from './components/MarketplaceLbcBrokerageView';
+import { AdminPanelWorkspace, AdminSectionId } from './components/AdminPanelWorkspace';
+import { FloatingSOSButton } from './components/FloatingSOSButton';
 import { translations } from './data/translations';
 import { REGIONS } from './data/mockData';
 
@@ -42,8 +27,9 @@ export default function App() {
   const [selectedRegion, setSelectedRegion] = useState<RegionId>('haiti');
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageCode>('ht');
   const [networkMode, setNetworkMode] = useState<'online' | 'edge' | 'offline'>('online');
-  const [activeTab, setActiveTab] = useState<ActiveTabId>('simulator');
-  const [simulatorSubTab, setSimulatorSubTab] = useState<'customer' | 'driver' | 'vendor' | 'marketplace'>('customer');
+  const [activeRole, setActiveRole] = useState<ActiveRole>('customer');
+  const [activeTab, setActiveTab] = useState<ActiveTabId>('customer');
+  const [adminInitialSection, setAdminInitialSection] = useState<AdminSectionId>('operations');
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioTranscript, setAudioTranscript] = useState<string | null>(null);
 
@@ -109,9 +95,43 @@ export default function App() {
     }
   };
 
+  // Role switcher and legacy tab handler
+  const handleSelectRole = (role: ActiveRole) => {
+    setActiveRole(role);
+    setActiveTab(role);
+  };
+
+  const handleSelectTab = (tab: ActiveTabId) => {
+    setActiveTab(tab);
+    if (tab === 'customer' || tab === 'simulator') {
+      setActiveRole('customer');
+    } else if (tab === 'driver') {
+      setActiveRole('driver');
+    } else if (tab === 'merchant') {
+      setActiveRole('merchant');
+    } else {
+      setActiveRole('admin');
+      if (tab === 'marketplace-lbc') setAdminInitialSection('marketplace-brokerage');
+      else if (tab === 'mobile-studio') setAdminInitialSection('mobile-studio');
+      else if (tab === 'mobile-build') setAdminInitialSection('mobile-build');
+      else if (tab === 'api-dispatch') setAdminInitialSection('backend-api');
+      else if (tab === 'qa-automation') setAdminInitialSection('qa-automation');
+      else if (tab === 'devops') setAdminInitialSection('devops');
+      else if (tab === 'pricing') setAdminInitialSection('pricing');
+      else if (tab === 'cms') setAdminInitialSection('cms');
+      else if (tab === 'verification') setAdminInitialSection('verification');
+      else if (tab === 'onboarding') setAdminInitialSection('onboarding');
+      else if (tab === 'expansion' || tab === 'payments') setAdminInitialSection('payments');
+      else if (tab === 'architecture' || tab === 'offline') setAdminInitialSection('architecture');
+      else if (tab === 'database') setAdminInitialSection('database');
+      else if (tab === 'maps') setAdminInitialSection('maps');
+      else setAdminInitialSection('operations');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950">
-      {/* Global Header */}
+      {/* Global Header with Role-Specific Navigation */}
       <Header
         selectedRegion={selectedRegion}
         onSelectRegion={handleSelectRegion}
@@ -119,8 +139,10 @@ export default function App() {
         onSelectLanguage={setSelectedLanguage}
         networkMode={networkMode}
         onToggleNetworkMode={toggleNetworkMode}
+        activeRole={activeRole}
+        onSelectRole={handleSelectRole}
         activeTab={activeTab}
-        onSelectTab={setActiveTab}
+        onSelectTab={handleSelectTab}
         onPlayVoiceGuide={handleGlobalVoiceGuide}
         isAudioPlaying={isAudioPlaying}
       />
@@ -133,151 +155,65 @@ export default function App() {
         </div>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Strictly Render Current User Role Interface */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Simulator Tab */}
-        {activeTab === 'simulator' && (
-          <div className="space-y-6">
-            {/* Top Sub-navigation for Role Switching */}
-            <div className="flex flex-wrap items-center justify-between gap-3 bg-neutral-900 border border-neutral-800 p-2.5 rounded-2xl">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-neutral-400 uppercase tracking-wider pl-2">
-                  Active Interface:
-                </span>
-                <div className="flex gap-1.5">
-                  <button
-                    id="subtab-customer"
-                    onClick={() => setSimulatorSubTab('customer')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
-                      simulatorSubTab === 'customer'
-                        ? 'bg-amber-400 text-neutral-950 shadow'
-                        : 'bg-neutral-800 text-neutral-300 hover:text-white'
-                    }`}
-                  >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>{t.customerApp}</span>
-                  </button>
-
-                  <button
-                    id="subtab-driver"
-                    onClick={() => setSimulatorSubTab('driver')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
-                      simulatorSubTab === 'driver'
-                        ? 'bg-amber-400 text-neutral-950 shadow'
-                        : 'bg-neutral-800 text-neutral-300 hover:text-white'
-                    }`}
-                  >
-                    <Bike className="w-3.5 h-3.5" />
-                    <span>{t.driverApp}</span>
-                  </button>
-
-                  <button
-                    id="subtab-vendor"
-                    onClick={() => setSimulatorSubTab('vendor')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 ${
-                      simulatorSubTab === 'vendor'
-                        ? 'bg-amber-400 text-neutral-950 shadow'
-                        : 'bg-neutral-800 text-neutral-300 hover:text-white'
-                    }`}
-                  >
-                    <Store className="w-3.5 h-3.5" />
-                    <span>{t.vendorPortal}</span>
-                  </button>
-                </div>
-              </div>
-
-              <div className="text-xs text-neutral-400 hidden sm:block pr-2">
-                Region: <strong className="text-white">{currentRegion.name}</strong> • Currency:{' '}
-                <strong className="text-amber-400">{currentRegion.currency}</strong>
-              </div>
-            </div>
-
-            {/* Active Sub-View */}
-            {simulatorSubTab === 'customer' && (
-              <CustomerInterface
-                region={selectedRegion}
-                language={selectedLanguage}
-                networkMode={networkMode}
-                onPlaySpeech={handlePlaySpeech}
-              />
-            )}
-
-            {simulatorSubTab === 'driver' && (
-              <DriverInterface
-                region={selectedRegion}
-                language={selectedLanguage}
-                networkMode={networkMode}
-                onPlaySpeech={handlePlaySpeech}
-              />
-            )}
-
-            {simulatorSubTab === 'vendor' && (
-              <VendorInterface
-                region={selectedRegion}
-                language={selectedLanguage}
-                onPlaySpeech={handlePlaySpeech}
-              />
-            )}
-          </div>
+        {/* Role 1: Customer Interface */}
+        {activeRole === 'customer' && (
+          <CustomerInterface
+            region={selectedRegion}
+            language={selectedLanguage}
+            networkMode={networkMode}
+            onPlaySpeech={handlePlaySpeech}
+          />
         )}
 
-        {/* 3-Sided Marketplace & LBC Token Brokerage */}
-        {activeTab === 'marketplace-lbc' && (
-          <MarketplaceLbcBrokerageView
+        {/* Role 2: Driver Interface */}
+        {activeRole === 'driver' && (
+          <DriverInterface
+            region={selectedRegion}
+            language={selectedLanguage}
+            networkMode={networkMode}
+            onPlaySpeech={handlePlaySpeech}
+          />
+        )}
+
+        {/* Role 3: Merchant Interface */}
+        {activeRole === 'merchant' && (
+          <VendorInterface
             region={selectedRegion}
             language={selectedLanguage}
             onPlaySpeech={handlePlaySpeech}
           />
         )}
 
-        {/* Mobile UI/UX Wireframe & Code Studio */}
-        {activeTab === 'mobile-studio' && <MobileAppDesignStudio />}
-
-        {/* Mobile Build Engineer (Android Gradle & iOS Fastlane/Xcode) */}
-        {activeTab === 'mobile-build' && <MobileBuildEngineerView />}
-
-        {/* Backend REST APIs & PostGIS Spatial Dispatch View */}
-        {activeTab === 'api-dispatch' && <BackendApiDispatchView />}
-
-        {/* QA Automation & E2E Dry-Run Simulation View */}
-        {activeTab === 'qa-automation' && <QaAutomationSuiteView />}
-
-        {/* Cloud DevOps, Docker & Infrastructure View */}
-        {activeTab === 'devops' && <DevOpsDeploymentView />}
-
-        {/* Admin Operations & Geofencing Console */}
-        {activeTab === 'admin' && <AdminOperationsConsole />}
-
-        {/* Multilingual CMS Tab */}
-        {activeTab === 'cms' && <MultilingualCMSView />}
-
-        {/* User Verification & Community Vouching Tab */}
-        {activeTab === 'verification' && <VerificationSystemView />}
-
-        {/* Dynamic Pricing Engine Tab */}
-        {activeTab === 'pricing' && <DynamicPricingView />}
-
-        {/* Onboarding Pipelines Tab */}
-        {activeTab === 'onboarding' && <OnboardingPipelinesView />}
-
-        {/* Payment Expansion & Omni-Channel Support Tab */}
-        {activeTab === 'expansion' && <PaymentExpansionSupportView />}
-
-        {/* Architecture Tab */}
-        {activeTab === 'architecture' && <ArchitectureView />}
-
-        {/* Database Schema Tab */}
-        {activeTab === 'database' && <DatabaseSchemaView />}
-
-        {/* Google Maps Tab */}
-        {activeTab === 'maps' && <GoogleMapsIntegrationView />}
-
-        {/* Payments Tab */}
-        {activeTab === 'payments' && <PaymentsIntegrationView />}
-
-        {/* Offline Sync Tab */}
-        {activeTab === 'offline' && <OfflineSyncView />}
+        {/* Role 4: Administration Panel (Restricted exclusively to this view) */}
+        {activeRole === 'admin' && (
+          <AdminPanelWorkspace
+            region={selectedRegion}
+            language={selectedLanguage}
+            onPlaySpeech={handlePlaySpeech}
+            initialSection={adminInitialSection}
+          />
+        )}
       </main>
+
+      {/* Minimized Non-Obstructive Fixed SOS Emergency Trigger Across All Interfaces (Including Admin Dashboards) */}
+      <FloatingSOSButton
+        role={activeRole === 'admin' ? 'admin' : activeRole}
+        region={selectedRegion}
+        language={selectedLanguage}
+        userName={
+          activeRole === 'driver'
+            ? 'Moïse Baptiste'
+            : activeRole === 'merchant'
+            ? 'Chef Fifi (Saveur Lakay)'
+            : activeRole === 'admin'
+            ? 'Wap Safety & Platform Operations'
+            : 'Daphnée Lamour'
+        }
+        onPlaySpeech={handlePlaySpeech}
+        position="bottom-right"
+      />
 
       {/* Footer */}
       <footer className="bg-neutral-900 border-t border-neutral-800/80 py-4 text-xs text-neutral-400">

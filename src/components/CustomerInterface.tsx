@@ -47,7 +47,6 @@ import { REGIONS, MOCK_DRIVERS, INITIAL_ACTIVE_ORDERS } from '../data/mockData';
 import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, calculateDynamicFare, COUNTRY_LOOKUP } from '../data/internationalData';
 import { translations } from '../data/translations';
 import { LiveRouteMap } from './LiveRouteMap';
-import { FloatingSOSButton } from './FloatingSOSButton';
 import { CustomerLbcWalletQuickWidget } from './CustomerLbcWalletQuickWidget';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 import { RideDemandHeatMap } from './RideDemandHeatMap';
@@ -1858,17 +1857,6 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
         onClose={() => setIsBrokerageOverlayOpen(false)}
         initialTab={brokerageInitialTab}
         onPlaySpeech={onPlaySpeech}
-      />
-
-      {/* Persistent Floating SOS Emergency Button (Top-Right aligned) */}
-      <FloatingSOSButton
-        role="customer"
-        region={region}
-        language={language}
-        userName="Daphnée Lamour"
-        currentLandmark={bookingStep === 'active' ? activeOrder.pickupLandmark : pickupLandmark}
-        onPlaySpeech={onPlaySpeech}
-        position="top-right"
       />
     </div>
   );

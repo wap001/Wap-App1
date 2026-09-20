@@ -60,6 +60,7 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
   const [fiatDestination, setFiatDestination] = useState<string>('');
   const [isExecuting, setIsExecuting] = useState<boolean>(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Transaction history filter
   const [historyRoleFilter, setHistoryRoleFilter] = useState<'all' | 'driver' | 'customer' | 'merchant'>('all');
@@ -96,9 +97,11 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
   const handleExecuteTransfer = (e: React.FormEvent) => {
     e.preventDefault();
     if (transferAmountLbc > currentWallet.balanceLbc) {
-      alert(`Insufficient LBC balance! You currently have ${currentWallet.balanceLbc.toLocaleString()} LBC.`);
+      setErrorMessage(`Insufficient LBC balance! You currently have ${currentWallet.balanceLbc.toLocaleString()} LBC.`);
+      setTimeout(() => setErrorMessage(null), 5000);
       return;
     }
+    setErrorMessage(null);
 
     setIsExecuting(true);
     setTimeout(() => {
@@ -307,6 +310,16 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
 
         {/* Modal Scrollable Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6 bg-neutral-950">
+          {errorMessage && (
+            <div className="bg-red-950/80 border border-red-500/50 text-red-200 p-4 rounded-2xl text-xs flex items-start gap-3">
+              <div className="w-2 h-2 rounded-full bg-red-400 mt-1.5 shrink-0" />
+              <div className="space-y-1">
+                <div className="font-bold text-sm text-white">Transfer Error</div>
+                <div className="leading-relaxed">{errorMessage}</div>
+              </div>
+            </div>
+          )}
+
           {successMessage && (
             <div className="bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 p-4 rounded-2xl text-xs flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />

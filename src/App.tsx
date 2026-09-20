@@ -10,7 +10,12 @@ import {
   WifiOff,
   Volume2,
   CheckCircle,
-  ShieldAlert
+  ShieldAlert,
+  Monitor,
+  BatteryCharging,
+  Wifi,
+  Signal,
+  UserCheck
 } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 import { RegionId, LanguageCode } from './types/architecture';
@@ -32,6 +37,39 @@ export default function App() {
   const [adminInitialSection, setAdminInitialSection] = useState<AdminSectionId>('operations');
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioTranscript, setAudioTranscript] = useState<string | null>(null);
+  const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
+
+  // Sync role and region from URL search params on mount
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const roleParam = params.get('role');
+      if (roleParam === 'customer' || roleParam === 'driver' || roleParam === 'merchant' || roleParam === 'admin') {
+        setActiveRole(roleParam as ActiveRole);
+        setActiveTab(roleParam as ActiveTabId);
+      }
+      const regionParam = params.get('region') as RegionId | null;
+      if (regionParam && REGIONS[regionParam]) {
+        setSelectedRegion(regionParam);
+      }
+      if (params.get('view') === 'mobile') {
+        setIsMobileFrameMode(true);
+      }
+    } catch {
+      // safe fallback
+    }
+  }, []);
+
+  // Update URL search params when activeRole changes
+  const updateUrlForRole = (role: ActiveRole) => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('role', role);
+      window.history.replaceState({}, '', url.toString());
+    } catch {
+      // safe fallback
+    }
+  };
 
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
@@ -99,18 +137,23 @@ export default function App() {
   const handleSelectRole = (role: ActiveRole) => {
     setActiveRole(role);
     setActiveTab(role);
+    updateUrlForRole(role);
   };
 
   const handleSelectTab = (tab: ActiveTabId) => {
     setActiveTab(tab);
     if (tab === 'customer' || tab === 'simulator') {
       setActiveRole('customer');
+      updateUrlForRole('customer');
     } else if (tab === 'driver') {
       setActiveRole('driver');
+      updateUrlForRole('driver');
     } else if (tab === 'merchant') {
       setActiveRole('merchant');
+      updateUrlForRole('merchant');
     } else {
       setActiveRole('admin');
+      updateUrlForRole('admin');
       if (tab === 'marketplace-lbc') setAdminInitialSection('marketplace-brokerage');
       else if (tab === 'mobile-studio') setAdminInitialSection('mobile-studio');
       else if (tab === 'mobile-build') setAdminInitialSection('mobile-build');
@@ -155,45 +198,136 @@ export default function App() {
         </div>
       )}
 
+      {/* Mobile Frame Mode Toggle & Direct Role Navigation Sub-Bar */}
+      <div className="bg-neutral-900/90 border-b border-neutral-800 px-4 py-2">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-amber-400">Unified Mobile App:</span>
+            <span className="text-neutral-400 hidden sm:inline">
+              Role-specific pages for Customers, Drivers &amp; Merchants with in-app task &amp; account management
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsMobileFrameMode(!isMobileFrameMode)}
+              className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition border cursor-pointer ${
+                isMobileFrameMode
+                  ? 'bg-amber-400 text-neutral-950 border-amber-300 shadow'
+                  : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:border-neutral-700'
+              }`}
+              title="Toggle between full viewport and mobile phone simulator"
+            >
+              {isMobileFrameMode ? (
+                <>
+                  <Monitor className="w-3.5 h-3.5" />
+                  <span>Desktop View</span>
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                  <span>Mobile Device Frame</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content Area: Strictly Render Current User Role Interface */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
-        {/* Role 1: Customer Interface */}
-        {activeRole === 'customer' && (
-          <CustomerInterface
-            region={selectedRegion}
-            language={selectedLanguage}
-            networkMode={networkMode}
-            onPlaySpeech={handlePlaySpeech}
-          />
-        )}
+      <main className={`flex-1 w-full mx-auto p-3 sm:p-6 lg:p-8 ${isMobileFrameMode && activeRole !== 'admin' ? 'max-w-[460px]' : 'max-w-7xl'}`}>
+        {isMobileFrameMode && activeRole !== 'admin' ? (
+          <div className="relative rounded-[40px] border-4 border-neutral-800 bg-neutral-950 shadow-2xl overflow-hidden p-2 sm:p-3 ring-1 ring-neutral-700/50">
+            {/* Simulated Phone Top Notch & Status Bar */}
+            <div className="h-6 w-full flex items-center justify-between px-5 text-[10px] font-mono text-neutral-400 select-none pb-2 border-b border-neutral-900">
+              <span className="font-bold text-neutral-200">09:41</span>
+              <div className="w-20 h-3.5 bg-neutral-900 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 rounded-full bg-neutral-700 mr-1.5" />
+                <div className="w-1.5 h-1.5 rounded-full bg-neutral-800" />
+              </div>
+              <div className="flex items-center gap-1.5 text-neutral-300">
+                <Signal className="w-3 h-3 text-neutral-400" />
+                <Wifi className="w-3 h-3 text-neutral-400" />
+                <BatteryCharging className="w-3.5 h-3.5 text-emerald-400" />
+              </div>
+            </div>
 
-        {/* Role 2: Driver Interface */}
-        {activeRole === 'driver' && (
-          <DriverInterface
-            region={selectedRegion}
-            language={selectedLanguage}
-            networkMode={networkMode}
-            onPlaySpeech={handlePlaySpeech}
-          />
-        )}
+            {/* Mobile App Viewport Content */}
+            <div className="pt-2 pb-6 max-h-[85vh] overflow-y-auto pr-1">
+              {activeRole === 'customer' && (
+                <CustomerInterface
+                  region={selectedRegion}
+                  language={selectedLanguage}
+                  networkMode={networkMode}
+                  onPlaySpeech={handlePlaySpeech}
+                />
+              )}
 
-        {/* Role 3: Merchant Interface */}
-        {activeRole === 'merchant' && (
-          <VendorInterface
-            region={selectedRegion}
-            language={selectedLanguage}
-            onPlaySpeech={handlePlaySpeech}
-          />
-        )}
+              {activeRole === 'driver' && (
+                <DriverInterface
+                  region={selectedRegion}
+                  language={selectedLanguage}
+                  networkMode={networkMode}
+                  onPlaySpeech={handlePlaySpeech}
+                />
+              )}
 
-        {/* Role 4: Administration Panel (Restricted exclusively to this view) */}
-        {activeRole === 'admin' && (
-          <AdminPanelWorkspace
-            region={selectedRegion}
-            language={selectedLanguage}
-            onPlaySpeech={handlePlaySpeech}
-            initialSection={adminInitialSection}
-          />
+              {activeRole === 'merchant' && (
+                <VendorInterface
+                  region={selectedRegion}
+                  language={selectedLanguage}
+                  onPlaySpeech={handlePlaySpeech}
+                />
+              )}
+            </div>
+
+            {/* Simulated Mobile Home Indicator Bar */}
+            <div className="pt-2 pb-1 flex justify-center bg-neutral-950 border-t border-neutral-900">
+              <div className="w-28 h-1 bg-neutral-700 rounded-full" />
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Role 1: Customer Interface */}
+            {activeRole === 'customer' && (
+              <CustomerInterface
+                region={selectedRegion}
+                language={selectedLanguage}
+                networkMode={networkMode}
+                onPlaySpeech={handlePlaySpeech}
+              />
+            )}
+
+            {/* Role 2: Driver Interface */}
+            {activeRole === 'driver' && (
+              <DriverInterface
+                region={selectedRegion}
+                language={selectedLanguage}
+                networkMode={networkMode}
+                onPlaySpeech={handlePlaySpeech}
+              />
+            )}
+
+            {/* Role 3: Merchant Interface */}
+            {activeRole === 'merchant' && (
+              <VendorInterface
+                region={selectedRegion}
+                language={selectedLanguage}
+                onPlaySpeech={handlePlaySpeech}
+              />
+            )}
+
+            {/* Role 4: Administration Panel (Restricted exclusively to this view) */}
+            {activeRole === 'admin' && (
+              <AdminPanelWorkspace
+                region={selectedRegion}
+                language={selectedLanguage}
+                onPlaySpeech={handlePlaySpeech}
+                initialSection={adminInitialSection}
+              />
+            )}
+          </>
         )}
       </main>
 

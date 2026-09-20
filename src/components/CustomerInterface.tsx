@@ -48,6 +48,7 @@ import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, calculateDynamicFare, COUNTRY_L
 import { translations } from '../data/translations';
 import { LiveRouteMap } from './LiveRouteMap';
 import { CustomerLbcWalletQuickWidget } from './CustomerLbcWalletQuickWidget';
+import { CustomerAccountManagement } from './CustomerAccountManagement';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 import { RideDemandHeatMap } from './RideDemandHeatMap';
 import { TippingModule, TipSubmission } from './TippingModule';
@@ -106,7 +107,7 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
 
   const [paymentMethodId, setPaymentMethodId] = useState<string>('local_mobile_money');
   // Default to 'form' so customer immediately sees the Ride Cost Estimator before requesting a ride
-  const [bookingStep, setBookingStep] = useState<'form' | 'searching' | 'active' | 'rating'>('form');
+  const [bookingStep, setBookingStep] = useState<'form' | 'searching' | 'active' | 'rating' | 'account'>('form');
   const [activeOrder, setActiveOrder] = useState<ActiveOrder>(INITIAL_ACTIVE_ORDERS[0]);
 
   // Ride Cost Estimator Interactive State
@@ -916,78 +917,108 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
           <Star className="w-3.5 h-3.5" />
           <span>{t.rateYourTrip}</span>
         </button>
-      </div>
 
-      {/* Service Switcher (Ride vs Package) */}
-      <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-950 rounded-xl mb-4 border border-neutral-800">
         <button
-          onClick={() => setServiceType('ride')}
-          className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
-            serviceType === 'ride'
-              ? 'bg-amber-400 text-neutral-950 shadow'
+          id="btn-mode-account"
+          type="button"
+          onClick={() => setBookingStep('account')}
+          className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer ${
+            bookingStep === 'account'
+              ? 'bg-amber-400 text-neutral-950 shadow font-bold'
               : 'text-neutral-400 hover:text-white'
           }`}
         >
-          <Bike className="w-4 h-4" />
-          <span>{t.motoTaxi}</span>
-        </button>
-        <button
-          onClick={() => setServiceType('package')}
-          className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
-            serviceType === 'package'
-              ? 'bg-amber-400 text-neutral-950 shadow'
-              : 'text-neutral-400 hover:text-white'
-          }`}
-        >
-          <Package className="w-4 h-4" />
-          <span>{t.expressParcel}</span>
+          <User className="w-3.5 h-3.5" />
+          <span>Account & Profile</span>
         </button>
       </div>
 
-      {/* Multi-Vehicle Class Selector (2-Wheeler, 3-Wheeler, 4-Wheeler) */}
-      <div className="mb-4 space-y-1.5">
-        <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
-          Select Vehicle Class:
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {(['2_wheeler', '3_wheeler', '4_wheeler'] as VehicleClass[]).map((vClass) => {
-            const vConfig = VEHICLE_CLASSES[vClass];
-            const isSelected = selectedVehicleClass === vClass;
-
-            return (
-              <button
-                key={vClass}
-                disabled={isExcluded}
-                onClick={() => setSelectedVehicleClass(vClass)}
-                className={`p-2.5 rounded-xl border text-left transition-all ${
-                  isSelected
-                    ? 'bg-amber-400/15 border-amber-400 text-white shadow-md'
-                    : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  {vConfig.iconType === 'bike' ? (
-                    <Bike className={`w-4 h-4 ${isSelected ? 'text-amber-400' : 'text-neutral-400'}`} />
-                  ) : vConfig.iconType === 'trike' ? (
-                    <Layers className={`w-4 h-4 ${isSelected ? 'text-cyan-400' : 'text-neutral-400'}`} />
-                  ) : (
-                    <Car className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-neutral-400'}`} />
-                  )}
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-300">
-                    {vConfig.passengerCapacity} pax
-                  </span>
-                </div>
-                <div className="font-bold text-xs text-white truncate">
-                  {vClass === '2_wheeler' ? '2-Wheeler' : vClass === '3_wheeler' ? '3-Wheeler' : '4-Wheeler'}
-                </div>
-                <div className="text-[10px] text-neutral-400 truncate">
-                  {vClass === '2_wheeler' ? 'Solo / Moto-Taxi' : vClass === '3_wheeler' ? 'Tuk-Tuk' : 'Sedan / Van'}
-                </div>
-              </button>
-            );
-          })}
+      {/* Customer Account & Profile In-App Management */}
+      {bookingStep === 'account' && (
+        <div className="mb-6">
+          <CustomerAccountManagement
+            region={region}
+            language={language}
+            onPlaySpeech={onPlaySpeech}
+            onClose={() => setBookingStep('form')}
+          />
         </div>
-      </div>
+      )}
+
+      {/* Service Switcher (Ride vs Package) - shown when booking */}
+      {bookingStep !== 'account' && (
+        <>
+          <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-950 rounded-xl mb-4 border border-neutral-800">
+            <button
+              onClick={() => setServiceType('ride')}
+              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+                serviceType === 'ride'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Bike className="w-4 h-4" />
+              <span>{t.motoTaxi}</span>
+            </button>
+            <button
+              onClick={() => setServiceType('package')}
+              className={`flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-semibold transition ${
+                serviceType === 'package'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Package className="w-4 h-4" />
+              <span>{t.expressParcel}</span>
+            </button>
+          </div>
+
+          {/* Multi-Vehicle Class Selector (2-Wheeler, 3-Wheeler, 4-Wheeler) */}
+          <div className="mb-4 space-y-1.5">
+            <label className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
+              Select Vehicle Class:
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(['2_wheeler', '3_wheeler', '4_wheeler'] as VehicleClass[]).map((vClass) => {
+                const vConfig = VEHICLE_CLASSES[vClass];
+                const isSelected = selectedVehicleClass === vClass;
+
+                return (
+                  <button
+                    key={vClass}
+                    disabled={isExcluded}
+                    onClick={() => setSelectedVehicleClass(vClass)}
+                    className={`p-2.5 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? 'bg-amber-400/15 border-amber-400 text-white shadow-md'
+                        : 'bg-neutral-950 border-neutral-800 text-neutral-400 hover:border-neutral-700'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      {vConfig.iconType === 'bike' ? (
+                        <Bike className={`w-4 h-4 ${isSelected ? 'text-amber-400' : 'text-neutral-400'}`} />
+                      ) : vConfig.iconType === 'trike' ? (
+                        <Layers className={`w-4 h-4 ${isSelected ? 'text-cyan-400' : 'text-neutral-400'}`} />
+                      ) : (
+                        <Car className={`w-4 h-4 ${isSelected ? 'text-emerald-400' : 'text-neutral-400'}`} />
+                      )}
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-neutral-900 text-neutral-300">
+                        {vConfig.passengerCapacity} pax
+                      </span>
+                    </div>
+                    <div className="font-bold text-xs text-white truncate">
+                      {vClass === '2_wheeler' ? '2-Wheeler' : vClass === '3_wheeler' ? '3-Wheeler' : '4-Wheeler'}
+                    </div>
+                    <div className="text-[10px] text-neutral-400 truncate">
+                      {vClass === '2_wheeler' ? 'Solo / Moto-Taxi' : vClass === '3_wheeler' ? 'Tuk-Tuk' : 'Sedan / Van'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Booking Step: Searching */}
       {bookingStep === 'searching' && (

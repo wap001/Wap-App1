@@ -15,11 +15,13 @@ import {
   Heart,
   ShieldCheck,
   Sparkles,
-  ArrowUpRight
+  ArrowUpRight,
+  User
 } from 'lucide-react';
 import { RegionId, LanguageCode, VendorProfile } from '../types/architecture';
 import { REGIONS, MOCK_VENDORS } from '../data/mockData';
 import { translations } from '../data/translations';
+import { MerchantAccountManagement } from './MerchantAccountManagement';
 
 interface VendorInterfaceProps {
   region: RegionId;
@@ -36,7 +38,7 @@ export const VendorInterface: React.FC<VendorInterfaceProps> = ({
   const currentRegion = REGIONS[region];
   const vendor = MOCK_VENDORS.find((v) => v.region === region) || MOCK_VENDORS[0];
 
-  const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'dispatch' | 'freedom'>('orders');
+  const [activeTab, setActiveTab] = useState<'orders' | 'menu' | 'dispatch' | 'freedom' | 'account'>('orders');
   const [items, setItems] = useState(vendor.menuItems);
   const [dispatchedOrder, setDispatchedOrder] = useState(false);
   const [lbcStaked, setLbcStaked] = useState(4850);
@@ -88,7 +90,7 @@ export const VendorInterface: React.FC<VendorInterfaceProps> = ({
       </div>
 
       {/* Tab Navigation */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1 bg-neutral-950 rounded-xl mb-4 border border-neutral-800">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-1 bg-neutral-950 rounded-xl mb-4 border border-neutral-800">
         <button
           onClick={() => setActiveTab('orders')}
           className={`py-2 text-xs font-semibold rounded-lg transition ${
@@ -121,6 +123,16 @@ export const VendorInterface: React.FC<VendorInterfaceProps> = ({
         >
           <Coins className="w-3.5 h-3.5" />
           <span>Liberté Cash</span>
+        </button>
+        <button
+          id="tab-vendor-account"
+          onClick={() => setActiveTab('account')}
+          className={`py-2 text-xs font-semibold rounded-lg transition flex items-center justify-center gap-1 ${
+            activeTab === 'account' ? 'bg-amber-400 text-neutral-950 shadow font-bold' : 'text-neutral-400 hover:text-white'
+          }`}
+        >
+          <User className="w-3.5 h-3.5" />
+          <span>Store Account</span>
         </button>
       </div>
 
@@ -334,6 +346,18 @@ export const VendorInterface: React.FC<VendorInterfaceProps> = ({
               {autoReinvest ? 'Aktif (20% LBC)' : 'Dezaktif (100% Kach)'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Store & Merchant Account In-App Management */}
+      {activeTab === 'account' && (
+        <div className="mt-2">
+          <MerchantAccountManagement
+            region={region}
+            language={language}
+            onPlaySpeech={onPlaySpeech}
+            onClose={() => setActiveTab('orders')}
+          />
         </div>
       )}
     </div>

@@ -33,7 +33,8 @@ import {
   X,
   Calendar,
   Flame,
-  Sparkles
+  Sparkles,
+  User
 } from 'lucide-react';
 import { RegionId, LanguageCode, DriverRideHistoryItem } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS, INITIAL_DRIVER_RIDE_HISTORY } from '../data/mockData';
@@ -41,6 +42,7 @@ import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, COUNTRY_LOOKUP } from '../data/
 import { translations } from '../data/translations';
 import { DriverSafetyKitModal } from './DriverSafetyKitModal';
 import { RideDemandHeatMap } from './RideDemandHeatMap';
+import { DriverAccountManagement } from './DriverAccountManagement';
 import { VehicleClass, DriverDocumentUpload, NavigationManeuver } from '../types/internationalScope';
 
 interface DriverInterfaceProps {
@@ -132,8 +134,8 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
   // Driver Safety Kit Feature
   const [showSafetyKitModal, setShowSafetyKitModal] = useState<boolean>(false);
 
-  // Driver View Mode: 'radar' (live dispatch radar), 'history' (ride history), 'heatmap' (surge demand map)
-  const [driverViewMode, setDriverViewMode] = useState<'radar' | 'history' | 'heatmap'>('radar');
+  // Driver View Mode: 'radar' (live dispatch radar), 'history' (ride history), 'heatmap' (surge demand map), 'account' (profile & vehicle)
+  const [driverViewMode, setDriverViewMode] = useState<'radar' | 'history' | 'heatmap' | 'account'>('radar');
 
   // Driver Ride History State
   const [rideHistory, setRideHistory] = useState<DriverRideHistoryItem[]>(() => {
@@ -588,6 +590,19 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
                 {rideHistory.length}
               </span>
             </button>
+            <button
+              id="tab-driver-account"
+              type="button"
+              onClick={() => setDriverViewMode('account')}
+              className={`px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 transition cursor-pointer ${
+                driverViewMode === 'account'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <User className="w-3.5 h-3.5" />
+              <span>Account &amp; Vehicle</span>
+            </button>
           </div>
 
           <button
@@ -690,6 +705,20 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
           </button>
         </div>
       </div>
+
+      {/* ------------------------------------------------------------------- */}
+      {/* DRIVER ACCOUNT & VEHICLE MANAGEMENT VIEW                            */}
+      {/* ------------------------------------------------------------------- */}
+      {driverViewMode === 'account' && (
+        <div id="section-driver-account-management" className="mb-4">
+          <DriverAccountManagement
+            region={region}
+            language={language}
+            onPlaySpeech={onPlaySpeech}
+            onClose={() => setDriverViewMode('radar')}
+          />
+        </div>
+      )}
 
       {/* ------------------------------------------------------------------- */}
       {/* DRIVER RIDE HISTORY VIEW                                            */}

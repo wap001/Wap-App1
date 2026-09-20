@@ -12,6 +12,7 @@ import {
   CheckCircle,
   ShieldAlert
 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 import { RegionId, LanguageCode } from './types/architecture';
 import { Header, ActiveTabId } from './components/Header';
 import { CustomerInterface } from './components/CustomerInterface';
@@ -294,6 +295,7 @@ export default function App() {
           </div>
         </div>
       </footer>
+      <Analytics />
     </div>
   );
 }

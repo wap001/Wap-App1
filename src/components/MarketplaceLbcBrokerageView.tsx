@@ -42,6 +42,7 @@ import {
 import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
 import { ThreeWayRatingPerformanceView } from './ThreeWayRatingPerformanceView';
+import { LbcQuickConvertUtility } from './LbcQuickConvertUtility';
 import {
   BROKERAGE_ASSETS,
   INITIAL_3SIDED_ORDERS,
@@ -699,6 +700,19 @@ export const MarketplaceLbcBrokerageView: React.FC<MarketplaceLbcBrokerageViewPr
           </div>
         </div>
       </div>
+
+      {/* Quick-Convert Utility & Liberté Cash Wallet (LBC Wallet) */}
+      <LbcQuickConvertUtility
+        currentWallet={currentWallet}
+        activePersona={activePersona}
+        region={region}
+        language={language}
+        onPlaySpeech={onPlaySpeech}
+        onApplyToBrokerageConverter={(amt) => {
+          setConvertAmountLbc(amt);
+          setMainViewTab('brokerage_converter');
+        }}
+      />
 
       {/* Module Navigation Tabs */}
       <div className="flex overflow-x-auto gap-2 border-b border-neutral-800 pb-2 no-scrollbar text-xs font-semibold">

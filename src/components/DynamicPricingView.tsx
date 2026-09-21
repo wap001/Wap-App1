@@ -215,6 +215,10 @@ export const DynamicPricingView: React.FC = () => {
               >
                 <optgroup label="Caribbean & Guianas">
                   <option value="HT">🇭🇹 Haiti (Port-au-Prince) - HTG</option>
+                  <option value="BS">🇧🇸 Bahamas (Nassau) - BSD</option>
+                  <option value="CW">🇨🇼 Curaçao (Willemstad) - ANG</option>
+                  <option value="BB">🇧🇧 Barbados (Bridgetown) - BBD</option>
+                  <option value="KN">🇰🇳 St. Kitts & Nevis (Basseterre) - XCD</option>
                   <option value="GY">🇬🇾 Guyana (Georgetown) - GYD</option>
                   <option value="SR">🇸🇷 Suriname (Paramaribo) - SRD</option>
                   <option value="JM">🇯🇲 Jamaica (Kingston) - JMD</option>
@@ -233,13 +237,20 @@ export const DynamicPricingView: React.FC = () => {
                   <option value="PE">🇵🇪 Peru (Lima) - PEN</option>
                   <option value="CL">🇨🇱 Chile (Santiago) - CLP</option>
                 </optgroup>
-                <optgroup label="Africa (North to South & Madagascar)">
+                <optgroup label="Africa (West, Central, East, South & Madagascar)">
                   <option value="EG">🇪🇬 Egypt (Cairo) - EGP</option>
                   <option value="LY">🇱🇾 Libya (Tripoli) - LYD</option>
                   <option value="SN">🇸🇳 Senegal (Dakar) - XOF</option>
+                  <option value="ML">🇲🇱 Mali (Bamako) - XOF</option>
+                  <option value="NE">🇳🇪 Niger (Niamey) - XOF</option>
+                  <option value="BJ">🇧🇯 Benin (Cotonou) - XOF</option>
                   <option value="CI">🇨🇮 Ivory Coast (Abidjan) - XOF</option>
                   <option value="NG">🇳🇬 Nigeria (Lagos) - NGN</option>
+                  <option value="CG">🇨🇬 Congo - Brazzaville - XAF</option>
+                  <option value="CD">🇨🇩 Congo - Kinshasa (DRC) - CDF</option>
                   <option value="KE">🇰🇪 Kenya (Nairobi) - KES</option>
+                  <option value="ZM">🇿🇲 Zambia (Lusaka) - ZMW</option>
+                  <option value="NA">🇳🇦 Namibia (Windhoek) - NAD</option>
                   <option value="MG">🇲🇬 Madagascar (Antananarivo) - MGA</option>
                   <option value="ZA">🇿🇦 South Africa (Johannesburg) - ZAR</option>
                 </optgroup>

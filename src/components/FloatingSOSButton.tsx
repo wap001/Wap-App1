@@ -14,7 +14,9 @@ import {
   Users,
   Navigation,
   ShieldCheck,
-  RotateCcw
+  RotateCcw,
+  Bot,
+  MessageSquare
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
@@ -27,6 +29,7 @@ interface FloatingSOSButtonProps {
   currentLandmark?: string;
   onPlaySpeech?: (text: string) => void;
   position?: 'bottom-right' | 'top-right' | 'relative';
+  onOpenChatbot?: () => void;
 }
 
 interface TelemetryPing {
@@ -46,7 +49,8 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
   userName,
   currentLandmark,
   onPlaySpeech,
-  position = 'bottom-right'
+  position = 'bottom-right',
+  onOpenChatbot
 }) => {
   const currentRegion = REGIONS[region];
   const [isOpen, setIsOpen] = useState(false);
@@ -462,12 +466,26 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
                         Live Tracking Screen Active • Audio Feed Monitoring
                       </div>
                     </div>
-                    <a
-                      href={`tel:${emergencyNumbers.dispatch.number}`}
-                      className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold rounded-lg text-xs flex items-center gap-1.5 transition shadow"
-                    >
-                      <PhoneCall className="w-3.5 h-3.5" /> Call Dispatch
-                    </a>
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      {onOpenChatbot && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsOpen(false);
+                            onOpenChatbot();
+                          }}
+                          className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 text-amber-300 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 transition border border-neutral-700 cursor-pointer"
+                        >
+                          <Bot className="w-3.5 h-3.5" /> Chatbot Support
+                        </button>
+                      )}
+                      <a
+                        href={`tel:${emergencyNumbers.dispatch.number}`}
+                        className="px-3 py-2 bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold rounded-lg text-xs flex items-center justify-center gap-1.5 transition shadow"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5" /> Call Dispatch
+                      </a>
+                    </div>
                   </div>
 
                   {/* Ambient Audio Stream Status */}

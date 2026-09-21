@@ -29,7 +29,10 @@ import {
   Sparkles,
   User,
   Sun,
-  Moon
+  Moon,
+  Info,
+  HelpCircle,
+  FileText
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
@@ -83,6 +86,8 @@ interface HeaderProps {
   onSignOut?: () => void;
   themeMode?: 'basic' | 'dark';
   onToggleThemeMode?: () => void;
+  onOpenAboutUs?: () => void;
+  onOpenEmergencyChatbot?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -105,6 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
   onSignOut,
   themeMode = 'dark',
   onToggleThemeMode,
+  onOpenAboutUs,
+  onOpenEmergencyChatbot,
 }) => {
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
@@ -247,6 +254,32 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="text-[11px] font-medium text-neutral-300">Dark Theme</span>
                 </>
               )}
+            </button>
+          )}
+
+          {/* About Us Modal Trigger Button */}
+          {onOpenAboutUs && (
+            <button
+              id="header-about-us-btn"
+              onClick={onOpenAboutUs}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              title="About Wap: Mission, Driver Legal Contracts, Safety & Liberté Cash"
+            >
+              <Info className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[11px] font-semibold">About Us</span>
+            </button>
+          )}
+
+          {/* Emergency Chatbot Support Button */}
+          {onOpenEmergencyChatbot && (
+            <button
+              id="header-emergency-chat-btn"
+              onClick={onOpenEmergencyChatbot}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-red-500/50 bg-red-950/60 hover:bg-red-900/60 text-red-200 hover:text-white transition-colors cursor-pointer"
+              title="24/7 Emergency AI Assistant & Support Chat"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-red-400" />
+              <span className="text-[11px] font-semibold">Emergency Support</span>
             </button>
           )}
 

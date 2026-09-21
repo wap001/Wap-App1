@@ -11,19 +11,22 @@ import {
   AlertTriangle,
   Camera,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Scale
 } from 'lucide-react';
 import {
   DRIVER_ONBOARDING_STAGES,
   VENDOR_ONBOARDING_STAGES
 } from '../data/extendedArchitectureData';
 import { OnboardingStep } from '../types/architecture';
+import { DriverContractModal } from './DriverContractModal';
 
 export const OnboardingPipelinesView: React.FC = () => {
   const [activePipeline, setActivePipeline] = useState<'driver' | 'vendor'>('driver');
   const [selectedStepIndex, setSelectedStepIndex] = useState<number>(0);
   const [simulatedQuizPassed, setSimulatedQuizPassed] = useState<boolean>(false);
   const [simulatedSelfieChecked, setSimulatedSelfieChecked] = useState<boolean>(true);
+  const [showContractSample, setShowContractSample] = useState<boolean>(false);
 
   const steps = activePipeline === 'driver' ? DRIVER_ONBOARDING_STAGES : VENDOR_ONBOARDING_STAGES;
   const currentStep = steps[selectedStepIndex] || steps[0];
@@ -85,12 +88,12 @@ export const OnboardingPipelinesView: React.FC = () => {
         </div>
 
         <div className="text-xs text-neutral-400 pr-2">
-          Completion Rate: <strong className="text-emerald-400 font-mono">Stage {selectedStepIndex + 1} of 5</strong>
+          Completion Rate: <strong className="text-emerald-400 font-mono">Stage {selectedStepIndex + 1} of {steps.length}</strong>
         </div>
       </div>
 
       {/* Stepper Navigation Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
+      <div className={`grid grid-cols-1 ${activePipeline === 'driver' ? 'sm:grid-cols-6' : 'sm:grid-cols-5'} gap-2 text-xs`}>
         {steps.map((step, idx) => (
           <button
             key={step.stepNumber}
@@ -211,6 +214,30 @@ export const OnboardingPipelinesView: React.FC = () => {
               </button>
             </div>
           )}
+
+          {/* Interactive Driver Legal Contract Review (Stage 6) */}
+          {activePipeline === 'driver' && selectedStepIndex === 5 && (
+            <div className="bg-neutral-950 p-4 rounded-xl border border-emerald-500/30 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-white flex items-center gap-1.5">
+                  <Scale className="w-4 h-4 text-emerald-400" />
+                  <span>Statutory Bilateral Transport Agreement & Rights</span>
+                </span>
+                <span className="text-[10px] text-emerald-400 font-mono">Digitally Enforceable</span>
+              </div>
+              <p className="text-neutral-400 text-xs">
+                Review the certified partner contract protecting drivers from arbitrary road fines, municipal detention, and non-payment defaults.
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowContractSample(true)}
+                className="bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 text-xs cursor-pointer shadow"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>Open & Inspect Sample Contract Agreement</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right Anti-Fraud & Profile Integrity Matrix */}
@@ -254,6 +281,16 @@ export const OnboardingPipelinesView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Driver Sample Legal Contract Modal */}
+      <DriverContractModal
+        isOpen={showContractSample}
+        onClose={() => setShowContractSample(false)}
+        driverName="Jean-Baptiste Voltaire"
+        driverId="DRV-ONBOARD-2026-0042"
+        vehicleClass="Motorcycle (2-Wheeler)"
+        plateNumber="HT-5829-TL"
+      />
     </div>
   );
 };

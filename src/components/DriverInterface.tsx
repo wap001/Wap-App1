@@ -34,13 +34,15 @@ import {
   Calendar,
   Flame,
   Sparkles,
-  User
+  User,
+  Scale
 } from 'lucide-react';
 import { RegionId, LanguageCode, DriverRideHistoryItem } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS, INITIAL_DRIVER_RIDE_HISTORY } from '../data/mockData';
 import { OPERATIONAL_COUNTRIES, VEHICLE_CLASSES, COUNTRY_LOOKUP } from '../data/internationalData';
 import { translations } from '../data/translations';
 import { DriverSafetyKitModal } from './DriverSafetyKitModal';
+import { DriverContractModal } from './DriverContractModal';
 import { RideDemandHeatMap } from './RideDemandHeatMap';
 import { DriverAccountManagement } from './DriverAccountManagement';
 import { VehicleClass, DriverDocumentUpload, NavigationManeuver } from '../types/internationalScope';
@@ -156,6 +158,9 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
 
   // Driver Safety Kit Feature
   const [showSafetyKitModal, setShowSafetyKitModal] = useState<boolean>(false);
+
+  // Driver Legal Partner Contract Modal Feature
+  const [showContractModal, setShowContractModal] = useState<boolean>(false);
 
   // Driver View Mode: 'radar' (live dispatch radar), 'history' (ride history), 'heatmap' (surge demand map), 'account' (profile & vehicle)
   const [driverViewMode, setDriverViewMode] = useState<'radar' | 'history' | 'heatmap' | 'account'>('radar');
@@ -627,6 +632,17 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
               <span>Account &amp; Vehicle</span>
             </button>
           </div>
+
+          <button
+            id="btn-driver-contract-trigger"
+            type="button"
+            onClick={() => setShowContractModal(true)}
+            className="px-3 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow bg-emerald-500/15 hover:bg-emerald-500 hover:text-neutral-950 text-emerald-300 border border-emerald-500/40 cursor-pointer"
+            title="View Official Driver Legal Contract Agreement"
+          >
+            <Scale className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Legal Contract</span>
+          </button>
 
           <button
             id="btn-driver-safety-kit-trigger"
@@ -1352,6 +1368,18 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
         countryCode={currentCountry.code}
         language={language}
         onPlaySpeech={onPlaySpeech}
+      />
+
+      {/* Driver Legal Partner Contract Modal */}
+      <DriverContractModal
+        isOpen={showContractModal}
+        onClose={() => setShowContractModal(false)}
+        driverName={driver.fullName}
+        driverId={driver.id}
+        vehicleClass={driver.vehicleType}
+        plateNumber={driver.plateNumber}
+        region={region}
+        countryCode={currentCountry.code}
       />
 
       {/* Toast Notification Container (Positioned safely above minimized SOS corner button) */}

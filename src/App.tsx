@@ -27,6 +27,9 @@ import { AdminPanelWorkspace, AdminSectionId } from './components/AdminPanelWork
 import { FloatingSOSButton } from './components/FloatingSOSButton';
 import { WelcomeLandingInterface, AuthUserData } from './components/WelcomeLandingInterface';
 import { IdentityVerificationStatusWidget } from './components/IdentityVerificationStatusWidget';
+import { AboutUsModal } from './components/AboutUsModal';
+import { DriverContractModal } from './components/DriverContractModal';
+import { EmergencyChatbotModal } from './components/EmergencyChatbotModal';
 import { translations } from './data/translations';
 import { REGIONS } from './data/mockData';
 
@@ -105,6 +108,11 @@ export default function App() {
       return false;
     }
   });
+
+  // Global Modals State
+  const [showAboutUsModal, setShowAboutUsModal] = useState<boolean>(false);
+  const [showDriverContractModal, setShowDriverContractModal] = useState<boolean>(false);
+  const [showEmergencyChatbotModal, setShowEmergencyChatbotModal] = useState<boolean>(false);
 
   // Sync role and region from URL search params on mount
   useEffect(() => {
@@ -308,6 +316,8 @@ export default function App() {
         onSignOut={handleSignOut}
         themeMode={themeMode}
         onToggleThemeMode={handleToggleThemeMode}
+        onOpenAboutUs={() => setShowAboutUsModal(true)}
+        onOpenEmergencyChatbot={() => setShowEmergencyChatbotModal(true)}
       />
 
       {/* Authenticated User Profile Header & Identity Verification Status Widget */}
@@ -511,6 +521,7 @@ export default function App() {
         }
         onPlaySpeech={handlePlaySpeech}
         position="bottom-right"
+        onOpenChatbot={() => setShowEmergencyChatbotModal(true)}
       />
 
       {/* Footer */}
@@ -522,13 +533,63 @@ export default function App() {
             <span>• On-Demand Motorcycle Rides & Deliveries for Caribbean Immigrant Communities</span>
           </div>
           <div className="flex items-center gap-4 text-neutral-500">
-            <span>🇭🇹 Haiti</span>
-            <span>🇬🇫 French Guiana</span>
-            <span>🇬🇾 Guyana</span>
-            <span>🇸🇷 Suriname</span>
+            <button
+              onClick={() => setShowAboutUsModal(true)}
+              className="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 cursor-pointer"
+            >
+              About Us &amp; Platform Charter
+            </button>
+            <button
+              onClick={() => setShowDriverContractModal(true)}
+              className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 cursor-pointer"
+            >
+              Driver Legal Contracts
+            </button>
+            <button
+              onClick={() => setShowEmergencyChatbotModal(true)}
+              className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2 cursor-pointer"
+            >
+              Emergency Support Chat
+            </button>
           </div>
         </div>
       </footer>
+
+      {/* Global About Us Modal */}
+      <AboutUsModal
+        isOpen={showAboutUsModal}
+        onClose={() => setShowAboutUsModal(false)}
+        currentRegion={selectedRegion}
+        language={selectedLanguage}
+        onOpenDriverContract={() => setShowDriverContractModal(true)}
+        onOpenEmergencySupport={() => setShowEmergencyChatbotModal(true)}
+      />
+
+      {/* Global Driver Partner Legal Contract Modal */}
+      <DriverContractModal
+        isOpen={showDriverContractModal}
+        onClose={() => setShowDriverContractModal(false)}
+        driverName={currentUser?.name || 'Jean-Baptiste Voltaire'}
+        driverId={currentUser?.id ? `DRV-${currentUser.id}` : 'DRV-WAP-2026-8891'}
+        region={selectedRegion}
+        countryCode={REGIONS[selectedRegion]?.currency || 'HT'}
+      />
+
+      {/* 24/7 Priority Emergency & Support Chatbot Modal */}
+      <EmergencyChatbotModal
+        isOpen={showEmergencyChatbotModal}
+        onClose={() => setShowEmergencyChatbotModal(false)}
+        userRole={activeRole}
+        userName={currentUser?.name || (activeRole === 'driver' ? 'Moïse Baptiste' : 'Valued User')}
+        region={selectedRegion}
+        language={selectedLanguage}
+        onTriggerSOSBeacon={() => {
+          // Open Floating SOS dialog or activate beacon
+          const sosBtn = document.getElementById('floating-sos-btn');
+          if (sosBtn) sosBtn.click();
+        }}
+      />
+
       <Analytics />
     </div>
   );

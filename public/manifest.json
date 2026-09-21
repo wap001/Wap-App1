@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Remix Wap - Motorcycle Rides & Delivery Platform",
+  "short_name": "Remix Wap",
+  "description": "On-demand motorcycle taxi and courier logistics platform designed for immigrant communities across the Caribbean, Latin America, and Africa.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1e1b4b",
+  "background_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

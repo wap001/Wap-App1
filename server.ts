@@ -30,6 +30,19 @@ async function startServer() {
   // Mount API routes FIRST before any static/Vite handler
   app.use(apiRouter);
 
+  // Explicitly serve public static assets (e.g. /sw.js, /manifest.json, /icon.svg) with appropriate MIME types
+  const publicPath = path.join(process.cwd(), 'public');
+  app.use(express.static(publicPath, {
+    setHeaders: (res, filePath) => {
+      if (filePath.endsWith('sw.js')) {
+        res.setHeader('Content-Type', 'application/javascript; charset=UTF-8');
+        res.setHeader('Service-Worker-Allowed', '/');
+      } else if (filePath.endsWith('manifest.json')) {
+        res.setHeader('Content-Type', 'application/manifest+json; charset=UTF-8');
+      }
+    }
+  }));
+
   // Vite middleware for development vs static build for production
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({

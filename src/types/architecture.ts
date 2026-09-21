@@ -1,4 +1,4 @@
-export type RegionId = 'haiti' | 'french_guiana' | 'guyana' | 'suriname';
+export type RegionId = 'haiti' | 'french_guiana' | 'guyana' | 'suriname' | 'senegal';
 
 export type LanguageCode = 'ht' | 'fr' | 'en' | 'nl' | 'sr';
 

@@ -70,16 +70,33 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
   const t = translations[language] || translations.en;
   const currentRegion = REGIONS[region];
 
-  // International country mapping (default to HT for haiti, GF for french_guiana, GY for guyana, SR for suriname)
+  // International country mapping (default to HT for haiti, GF for french_guiana, GY for guyana, SN for senegal, SR for suriname)
   const defaultCountryCode =
-    region === 'haiti' ? 'HT' : region === 'french_guiana' ? 'GF' : region === 'guyana' ? 'GY' : 'SR';
+    region === 'haiti'
+      ? 'HT'
+      : region === 'senegal'
+      ? 'SN'
+      : region === 'french_guiana'
+      ? 'GF'
+      : region === 'guyana'
+      ? 'GY'
+      : 'SR';
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>(defaultCountryCode);
   const selectedCountry = COUNTRY_LOOKUP[selectedCountryCode] || COUNTRY_LOOKUP['HT'];
   const isExcluded = selectedCountry.isStrictlyExcluded;
 
   // Synchronize country selection whenever the top-level region selector updates
   useEffect(() => {
-    const code = region === 'haiti' ? 'HT' : region === 'french_guiana' ? 'GF' : region === 'guyana' ? 'GY' : 'SR';
+    const code =
+      region === 'haiti'
+        ? 'HT'
+        : region === 'senegal'
+        ? 'SN'
+        : region === 'french_guiana'
+        ? 'GF'
+        : region === 'guyana'
+        ? 'GY'
+        : 'SR';
     setSelectedCountryCode(code);
   }, [region]);
 
@@ -89,6 +106,8 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
   const [pickupLandmark, setPickupLandmark] = useState(
     region === 'haiti'
       ? 'Delmas 33, devan Famasi Nouvelle Génération'
+      : region === 'senegal'
+      ? 'Dakar, Place de l’Indépendance (Plateau)'
       : region === 'french_guiana'
       ? 'Cayenne, Rond-Point du Vieux Port'
       : region === 'guyana'
@@ -98,6 +117,8 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
   const [dropoffLandmark, setDropoffLandmark] = useState(
     region === 'haiti'
       ? 'Pétion-Ville, akote Otèl Kinam'
+      : region === 'senegal'
+      ? 'Almadies, près du Monument de la Renaissance'
       : region === 'french_guiana'
       ? 'Rémire-Montjoly, Cité Médan'
       : region === 'guyana'

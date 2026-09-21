@@ -94,6 +94,11 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
       police: { name: 'Korps Politie Suriname', number: '115' },
       ambulance: { name: 'Ambulance Dienst Paramaribo', number: '113' },
       dispatch: { name: 'Wap Paramaribo Security Dispatch', number: '+597 400-9110' }
+    },
+    senegal: {
+      police: { name: 'Police Nationale du Sénégal', number: '17' },
+      ambulance: { name: 'SAMU Sénégal / Pompiers', number: '15' },
+      dispatch: { name: 'Wap Dakar Incident Command', number: '+221 33 800-9110' }
     }
   }[region];
 

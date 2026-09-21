@@ -117,7 +117,15 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
   const [signupPassword, setSignupPassword] = useState<string>('');
   const [showSignupPassword, setShowSignupPassword] = useState<boolean>(false);
   const [signupCountryCode, setSignupCountryCode] = useState<string>(
-    currentRegion === 'haiti' ? '+509' : currentRegion === 'french_guiana' ? '+594' : currentRegion === 'guyana' ? '+592' : '+597'
+    currentRegion === 'haiti'
+      ? '+509'
+      : currentRegion === 'senegal'
+      ? '+221'
+      : currentRegion === 'french_guiana'
+      ? '+594'
+      : currentRegion === 'guyana'
+      ? '+592'
+      : '+597'
   );
   const [signupPhone, setSignupPhone] = useState<string>('');
   const [selectedPlanId, setSelectedPlanId] = useState<string>('customer_pass');
@@ -132,6 +140,8 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
   const [passportCountry, setPassportCountry] = useState<string>(
     currentRegion === 'haiti'
       ? 'Haiti (HT)'
+      : currentRegion === 'senegal'
+      ? 'Senegal (SN)'
       : currentRegion === 'french_guiana'
       ? 'French Guiana (GF/FR)'
       : currentRegion === 'guyana'
@@ -369,6 +379,8 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
           issuingCountry:
             currentRegion === 'haiti'
               ? 'Haiti (HT)'
+              : currentRegion === 'senegal'
+              ? 'Senegal (SN)'
               : currentRegion === 'french_guiana'
               ? 'French Guiana (GF/FR)'
               : currentRegion === 'guyana'
@@ -549,6 +561,8 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
         issuingCountry:
           currentRegion === 'haiti'
             ? 'Haiti (HT)'
+            : currentRegion === 'senegal'
+            ? 'Senegal (SN)'
             : currentRegion === 'french_guiana'
             ? 'French Guiana (GF/FR)'
             : currentRegion === 'guyana'

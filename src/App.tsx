@@ -40,6 +40,25 @@ export default function App() {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [audioTranscript, setAudioTranscript] = useState<string | null>(null);
   const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
+  const [themeMode, setThemeMode] = useState<'basic' | 'dark'>(() => {
+    try {
+      return (localStorage.getItem('wap_theme_mode') as 'basic' | 'dark') || 'dark';
+    } catch {
+      return 'dark';
+    }
+  });
+
+  const handleToggleThemeMode = () => {
+    setThemeMode((prev) => {
+      const next = prev === 'basic' ? 'dark' : 'basic';
+      try {
+        localStorage.setItem('wap_theme_mode', next);
+      } catch {
+        // safe fallback
+      }
+      return next;
+    });
+  };
 
   // Default demo authenticated user ensuring Identity Verification Status is immediately visible
   const DEFAULT_DEMO_USER: AuthUserData = {
@@ -267,7 +286,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950">
+    <div className={`min-h-screen flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950 transition-colors duration-200 ${themeMode === 'basic' ? 'theme-basic bg-slate-50 text-slate-900' : 'bg-neutral-950 text-neutral-100'}`}>
       {/* Global Header with Role-Specific Navigation */}
       <Header
         selectedRegion={selectedRegion}
@@ -287,6 +306,8 @@ export default function App() {
         isWelcomeActive={isWelcomeActive}
         onToggleWelcome={handleToggleWelcome}
         onSignOut={handleSignOut}
+        themeMode={themeMode}
+        onToggleThemeMode={handleToggleThemeMode}
       />
 
       {/* Authenticated User Profile Header & Identity Verification Status Widget */}

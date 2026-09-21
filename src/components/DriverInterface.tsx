@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Bike,
   ShieldCheck,
@@ -63,10 +63,33 @@ export const DriverInterface: React.FC<DriverInterfaceProps> = ({
   const driver = MOCK_DRIVERS.find((d) => d.region === region) || MOCK_DRIVERS[0];
 
   const defaultCountryCode =
-    region === 'haiti' ? 'HT' : region === 'french_guiana' ? 'GF' : region === 'guyana' ? 'GY' : 'SR';
+    region === 'haiti'
+      ? 'HT'
+      : region === 'senegal'
+      ? 'SN'
+      : region === 'french_guiana'
+      ? 'GF'
+      : region === 'guyana'
+      ? 'GY'
+      : 'SR';
   const [countryCode, setCountryCode] = useState<string>(defaultCountryCode);
   const currentCountry = COUNTRY_LOOKUP[countryCode] || COUNTRY_LOOKUP['HT'];
   const isExcluded = currentCountry.isStrictlyExcluded;
+
+  // Synchronize country code when top-level region selector updates
+  useEffect(() => {
+    const code =
+      region === 'haiti'
+        ? 'HT'
+        : region === 'senegal'
+        ? 'SN'
+        : region === 'french_guiana'
+        ? 'GF'
+        : region === 'guyana'
+        ? 'GY'
+        : 'SR';
+    setCountryCode(code);
+  }, [region]);
 
   const [isOnline, setIsOnline] = useState(true);
   const [selectedVehicleClass, setSelectedVehicleClass] = useState<VehicleClass>('2_wheeler');

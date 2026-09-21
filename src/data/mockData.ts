@@ -53,6 +53,19 @@ export const REGIONS: Record<string, RegionConfig> = {
     centerCoordinates: { lat: 5.852, lng: -55.2038 },
     landmarkNamingStyle: 'Hoek straat, Naast mandir/moskee, Waterkant steiger',
   },
+  senegal: {
+    id: 'senegal',
+    name: 'Senegal',
+    country: 'Sénégal',
+    flag: '🇸🇳',
+    currency: 'XOF',
+    currencySymbol: 'CFA',
+    primaryLanguages: ['fr', 'ht', 'en'],
+    paymentGateways: ['Wave Mobile Money', 'Orange Money (Sonatel)', 'Free Money', 'Espèces (Cash Escrow)'],
+    sampleCity: 'Dakar (Plateau & Médina)',
+    centerCoordinates: { lat: 14.6928, lng: -17.4467 },
+    landmarkNamingStyle: 'Rond-point, Près de la Mosquée, Carrefour, Marché Sandaga / Kermel',
+  },
 };
 
 export const MOCK_DRIVERS: DriverProfile[] = [
@@ -144,9 +157,48 @@ export const MOCK_DRIVERS: DriverProfile[] = [
     emergencyContact: '+597 712 9090',
     createdAt: '2023-11-04',
   },
+  {
+    id: 'drv_05',
+    fullName: 'Amadou Diallo',
+    phone: '+221 77 654 32 10',
+    role: 'driver',
+    region: 'senegal',
+    preferredLanguage: 'fr',
+    walletBalance: 24500,
+    currency: 'XOF',
+    idVerificationStatus: 'verified',
+    idType: 'passport',
+    vehicleType: 'motorcycle',
+    plateNumber: 'DK-7842-SN',
+    motorcycleModel: 'Bajaj Boxer 150cc Noir',
+    helmetVerified: true,
+    rating: 4.96,
+    totalTrips: 624,
+    currentStatus: 'available',
+    location: { lat: 14.695, lng: -17.448, heading: 90, speedKmh: 32 },
+    emergencyContact: '+221 70 812 44 99 (Fatou Diallo)',
+    createdAt: '2024-05-18',
+  },
 ];
 
 export const MOCK_VENDORS: VendorProfile[] = [
+  {
+    id: 'ven_05',
+    name: 'Keur Yoff & Thiéboudienne Express',
+    businessType: 'restaurant_kiosk',
+    ownerName: 'Ousmane Sène',
+    phone: '+221 77 341 88 00',
+    region: 'senegal',
+    addressLandmark: 'Place de l’Indépendance, Plateau Dakar',
+    coordinates: { lat: 14.692, lng: -17.445 },
+    rating: 4.95,
+    isVerified: true,
+    menuItems: [
+      { id: 'm11', name: 'Ceebu Jën Penda Mbaye (Riz au Poisson Rouge)', description: 'Poisson mérou frais, légumes mijotés, riz cassé', price: 2500, category: 'Plats Chauds', isAvailable: true },
+      { id: 'm12', name: 'Yassa Poulet Rôti au Citron Vert', description: 'Poulet fermier mariné, oignons caramélisés, riz blanc', price: 2800, category: 'Plats Chauds', isAvailable: true },
+      { id: 'm13', name: 'Jus de Bissap & Bouye Glacé', description: 'Fleurs d’hibiscus et pain de singe baobab bio', price: 600, category: 'Boissons', isAvailable: true },
+    ],
+  },
   {
     id: 'ven_01',
     name: 'Restoran Lakay & Griyo Cho',

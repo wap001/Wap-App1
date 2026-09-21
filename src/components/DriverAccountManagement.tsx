@@ -65,7 +65,7 @@ export const DriverAccountManagement: React.FC<DriverAccountManagementProps> = (
       fileType: 'application/pdf',
       uploadedAt: '2026-03-01T08:20:00.000Z',
       passportNumber: 'P90283411',
-      issuingCountry: 'Haiti (HT)',
+      issuingCountry: region === 'senegal' ? 'Senegal (SN)' : 'Haiti (HT)',
       expirationDate: '2032-05-14',
     },
   };
@@ -83,7 +83,11 @@ export const DriverAccountManagement: React.FC<DriverAccountManagementProps> = (
 
   // Payout & Financial Settings
   const [monCashPayoutPhone, setMonCashPayoutPhone] = useState(
-    region === 'haiti' ? '3784-9912' : '694-28-19'
+    region === 'haiti'
+      ? '3784-9912'
+      : region === 'senegal'
+      ? '77-654-32'
+      : '694-28-19'
   );
   const [payoutFrequency, setPayoutFrequency] = useState<'instant' | 'daily'>('instant');
   const [autoDepositEarnings, setAutoDepositEarnings] = useState(true);

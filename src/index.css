@@ -1,1 +1,46 @@
 @import "tailwindcss";
+
+/* Basic Clean Theme Styling */
+.theme-basic {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.theme-basic .bg-neutral-950 {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+
+.theme-basic .bg-neutral-900,
+.theme-basic .bg-neutral-900\/90,
+.theme-basic .bg-neutral-900\/95 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+.theme-basic .bg-neutral-800,
+.theme-basic .bg-neutral-850 {
+  background-color: #f1f5f9 !important;
+  color: #1e293b !important;
+}
+
+.theme-basic .text-white {
+  color: #0f172a !important;
+}
+
+.theme-basic .text-neutral-100,
+.theme-basic .text-neutral-200,
+.theme-basic .text-neutral-300 {
+  color: #1e293b !important;
+}
+
+.theme-basic .text-neutral-400,
+.theme-basic .text-neutral-500 {
+  color: #475569 !important;
+}
+
+.theme-basic .border-neutral-800,
+.theme-basic .border-neutral-700,
+.theme-basic .border-neutral-850 {
+  border-color: #cbd5e1 !important;
+}

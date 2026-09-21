@@ -27,7 +27,9 @@ import {
   LogIn,
   LogOut,
   Sparkles,
-  User
+  User,
+  Sun,
+  Moon
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
@@ -79,6 +81,8 @@ interface HeaderProps {
   isWelcomeActive?: boolean;
   onToggleWelcome?: () => void;
   onSignOut?: () => void;
+  themeMode?: 'basic' | 'dark';
+  onToggleThemeMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -99,6 +103,8 @@ export const Header: React.FC<HeaderProps> = ({
   isWelcomeActive,
   onToggleWelcome,
   onSignOut,
+  themeMode = 'dark',
+  onToggleThemeMode,
 }) => {
   const t = translations[selectedLanguage] || translations.en;
   const currentRegion = REGIONS[selectedRegion];
@@ -218,6 +224,32 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
           </button>
 
+          {/* Theme Appearance Switcher (Basic Light vs Dark) */}
+          {onToggleThemeMode && (
+            <button
+              id="theme-appearance-toggle"
+              onClick={onToggleThemeMode}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors ${
+                themeMode === 'basic'
+                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:bg-amber-200'
+                  : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700'
+              }`}
+              title={themeMode === 'basic' ? 'Basic Clean Theme active. Click for Dark Theme' : 'Dark Theme active. Click for Basic Clean Theme'}
+            >
+              {themeMode === 'basic' ? (
+                <>
+                  <Sun className="w-3.5 h-3.5 text-amber-600" />
+                  <span className="text-[11px] font-semibold">Basic Theme</span>
+                </>
+              ) : (
+                <>
+                  <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                  <span className="text-[11px] font-medium text-neutral-300">Dark Theme</span>
+                </>
+              )}
+            </button>
+          )}
+
           {/* Region Picker */}
           <div className="flex items-center bg-neutral-800 rounded-md border border-neutral-700 p-0.5">
             <span className="pl-2 pr-1 text-neutral-400">
@@ -230,6 +262,7 @@ export const Header: React.FC<HeaderProps> = ({
               className="bg-transparent text-white font-medium text-xs pr-2 py-0.5 focus:outline-none cursor-pointer"
             >
               <option value="haiti" className="bg-neutral-800 text-white">🇭🇹 Haiti (Port-au-Prince)</option>
+              <option value="senegal" className="bg-neutral-800 text-white">🇸🇳 Senegal (Dakar)</option>
               <option value="french_guiana" className="bg-neutral-800 text-white">🇬🇫 Guyane (Cayenne)</option>
               <option value="guyana" className="bg-neutral-800 text-white">🇬🇾 Guyana (Georgetown)</option>
               <option value="suriname" className="bg-neutral-800 text-white">🇸🇷 Suriname (Paramaribo)</option>

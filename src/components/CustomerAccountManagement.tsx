@@ -59,7 +59,12 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
     id: 'usr_customer_daphnee',
     name: 'Daphnée Lamour',
     email: 'daphnee.lamour@wap-customer.ht',
-    phone: region === 'haiti' ? '+509 3712-8821' : '+594 694 45 22 10',
+    phone:
+      region === 'haiti'
+        ? '+509 3712-8821'
+        : region === 'senegal'
+        ? '+221 77 450 12 34'
+        : '+594 694 45 22 10',
     role: 'customer',
     region,
     subscriptionTier: 'freedom_plus',
@@ -75,23 +80,27 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
       fileType: 'application/pdf',
       uploadedAt: '2026-03-12T10:15:00.000Z',
       passportNumber: 'P48291032',
-      issuingCountry: 'Haiti (HT)',
+      issuingCountry: region === 'senegal' ? 'Senegal (SN)' : 'Haiti (HT)',
       expirationDate: '2031-10-18',
     },
   };
 
   // Profile Information
-  const [fullName, setFullName] = useState('Daphnée Lamour');
+  const [fullName, setFullName] = useState(region === 'senegal' ? 'Fatou Ndiaye' : 'Daphnée Lamour');
   const [phoneNumber, setPhoneNumber] = useState(
     region === 'haiti'
       ? '+509 3712-8821'
+      : region === 'senegal'
+      ? '+221 77 450 12 34'
       : region === 'french_guiana'
       ? '+594 694 45 22 10'
       : region === 'guyana'
       ? '+592 612 9944'
       : '+597 812 3456'
   );
-  const [emailAddress, setEmailAddress] = useState('daphnee.lamour@wap.ht');
+  const [emailAddress, setEmailAddress] = useState(
+    region === 'senegal' ? 'fatou.ndiaye@wap-customer.sn' : 'daphnee.lamour@wap.ht'
+  );
   const [selectedLang, setSelectedLang] = useState<LanguageCode>(language);
 
   // Saved Addresses
@@ -103,6 +112,8 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
       address:
         region === 'haiti'
           ? 'Delmas 33, devan Famasi Nouvelle Génération'
+          : region === 'senegal'
+          ? 'Médina, Rue 6 x Boulevard du Général de Gaulle'
           : region === 'french_guiana'
           ? 'Cayenne, Rond-Point du Vieux Port'
           : 'Georgetown, near Stabroek Clock'
@@ -114,6 +125,8 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
       address:
         region === 'haiti'
           ? 'Pétion-Ville, akote Otèl Kinam'
+          : region === 'senegal'
+          ? 'Plateau Dakar, Place de l’Indépendance'
           : region === 'french_guiana'
           ? 'Rémire-Montjoly, Cité Médan'
           : 'Kitty, Alexander Street corner'
@@ -125,6 +138,8 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
       address:
         region === 'haiti'
           ? 'Kafou Ayewopò, mache piblik'
+          : region === 'senegal'
+          ? 'Marché Sandaga & Kermel'
           : region === 'french_guiana'
           ? 'Marché Central de Cayenne'
           : 'Bourda Market'

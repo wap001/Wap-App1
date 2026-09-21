@@ -53,7 +53,36 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>(initialCountryCode);
   const [selectedVehicle, setSelectedVehicle] = useState<'all' | VehicleClass>('all');
   const [activeViewMode, setActiveViewMode] = useState<'grid' | 'visual_map'>('visual_map');
-  const [selectedNodeId, setSelectedNodeId] = useState<string>('node-pap');
+  const [selectedNodeId, setSelectedNodeId] = useState<string>(
+    region === 'senegal'
+      ? 'node-dak'
+      : region === 'french_guiana'
+      ? 'node-cay'
+      : region === 'guyana'
+      ? 'node-geo'
+      : region === 'suriname'
+      ? 'node-par'
+      : 'node-pap'
+  );
+
+  React.useEffect(() => {
+    if (region === 'senegal') {
+      setSelectedNodeId('node-dak');
+      setSelectedCountryCode('SN');
+    } else if (region === 'french_guiana') {
+      setSelectedNodeId('node-cay');
+      setSelectedCountryCode('GF');
+    } else if (region === 'guyana') {
+      setSelectedNodeId('node-geo');
+      setSelectedCountryCode('GY');
+    } else if (region === 'suriname') {
+      setSelectedNodeId('node-par');
+      setSelectedCountryCode('SR');
+    } else if (region === 'haiti') {
+      setSelectedNodeId('node-pap');
+      setSelectedCountryCode('HT');
+    }
+  }, [region]);
 
   // Filter nodes according to selected country or region
   const nodes = FLEET_HEATMAP_DATA.filter((n) => n.status !== 'excluded_blocked');
@@ -90,7 +119,15 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
       { name: 'Waterkant & Central Market Hub', surge: 1.25, waitMin: 4, motoCount: 34, status: 'moderate' },
       { name: 'Hermitage Mall / Commewijne Link', surge: 1.2, waitMin: 5, motoCount: 28, status: 'moderate' },
       { name: 'Johan Adolf Pengel Airport Route', surge: 1.35, waitMin: 7, motoCount: 18, status: 'surge' },
-    ]
+    ],
+    'SN': [
+      { name: 'Dakar Plateau & Place de l’Indépendance', surge: 1.45, waitMin: 2, motoCount: 92, status: 'surge' },
+      { name: 'Almadies & Corniche Ouest Axis', surge: 1.5, waitMin: 3, motoCount: 74, status: 'surge' },
+      { name: 'Médina & Marché Sandaga Hub', surge: 1.35, waitMin: 3, motoCount: 65, status: 'surge' },
+      { name: 'Aéroport International Blaise Diagne (AIBD)', surge: 1.6, waitMin: 5, motoCount: 48, status: 'surge' },
+      { name: 'Grand Yoff & Patte d’Oie Carrefour', surge: 1.25, waitMin: 4, motoCount: 56, status: 'moderate' },
+      { name: 'Thiès Gare Routière & Centre Commercial', surge: 1.15, waitMin: 5, motoCount: 38, status: 'balanced' },
+    ],
   };
 
   const currentHotspots = cityMicroHotspots[selectedNode.countryCode] || cityMicroHotspots['HT'];

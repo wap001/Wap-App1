@@ -679,16 +679,17 @@ export const IdentityVerificationStatusWidget: React.FC<IdentityVerificationStat
       {/* Reupload Modal for Full Widget */}
       {showReuploadModal && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-3xl p-6 max-w-md w-full shadow-2xl text-left">
-            <div className="flex items-center justify-between pb-3 border-b border-neutral-800">
+          <div className="modal-blue-surface rounded-3xl p-6 max-w-md w-full shadow-2xl text-left ring-1 ring-blue-500/30">
+            <div className="flex items-center justify-between pb-3 border-b border-blue-800/60">
               <div className="flex items-center gap-2">
-                <Upload className="w-5 h-5 text-amber-400" />
+                <Upload className="w-5 h-5 text-amber-300" />
                 <h3 className="font-bold text-white text-base">Re-upload Valid Passport</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setShowReuploadModal(false)}
-                className="text-neutral-400 hover:text-white text-lg font-bold"
+                className="w-6 h-6 rounded-lg bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center transition shadow cursor-pointer"
+                title="Close"
               >
                 ✕
               </button>
@@ -750,13 +751,13 @@ export const IdentityVerificationStatusWidget: React.FC<IdentityVerificationStat
                 <button
                   type="button"
                   onClick={() => setShowReuploadModal(false)}
-                  className="flex-1 py-2 rounded-xl bg-neutral-800 text-neutral-300 hover:text-white text-xs font-bold transition"
+                  className="flex-1 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-xs font-bold transition shadow cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 text-xs font-bold hover:from-amber-300 hover:to-amber-400 transition shadow"
+                  className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-neutral-950 text-xs font-bold hover:from-amber-300 hover:to-amber-400 transition shadow cursor-pointer"
                 >
                   Submit for Compliance Review
                 </button>

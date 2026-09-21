@@ -40,6 +40,7 @@ import { translations } from '../data/translations';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 import { AuthUserData } from './WelcomeLandingInterface';
 import { IdentityVerificationStatusWidget } from './IdentityVerificationStatusWidget';
+import { WapLogo } from './WapLogo';
 
 export type ActiveRole = 'customer' | 'driver' | 'merchant' | 'admin';
 
@@ -129,15 +130,13 @@ export const Header: React.FC<HeaderProps> = ({
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-neutral-900 text-white border-b border-neutral-800 shadow-md">
-      {/* Top Banner: Status & Diaspora Region Selector */}
+    <header className="sticky top-0 z-40 bg-purple-navy-header text-white shadow-xl">
+      {/* Top Banner: Status, Official Logo & Diaspora Region Selector */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center space-x-3">
-          <div className="flex items-center gap-1.5 font-bold tracking-wider text-amber-400 bg-neutral-800 px-2.5 py-1 rounded-md border border-neutral-700">
-            <Bike className="w-4 h-4 text-amber-400" />
-            <span className="text-sm">WAP PLATFORM</span>
-          </div>
-          <span className="hidden md:inline-block text-neutral-400">
+          <WapLogo size="md" variant="full" />
+          <div className="h-5 w-px bg-indigo-900/60 hidden sm:block" />
+          <span className="hidden md:inline-block text-indigo-200/80 font-medium">
             {currentRegion.flag} {currentRegion.name} ({currentRegion.sampleCity}) • {currentRegion.currency}
           </span>
         </div>
@@ -370,7 +369,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Role-Specific Navigation Architecture */}
-      <div className="border-t border-neutral-800/90 bg-neutral-950/70">
+      <div className="bg-purple-navy-subbar text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2 flex flex-col md:flex-row md:items-center justify-between gap-3">
           {/* Main Role Selector Tabs */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">

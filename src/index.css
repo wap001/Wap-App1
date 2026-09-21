@@ -1,46 +1,129 @@
 @import "tailwindcss";
 
-/* Basic Clean Theme Styling */
-.theme-basic {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
+/* 
+  Global Color Scheme Specification:
+  - White background with crisp dark slate/black typography for high contrast & clarity.
+  - Purple Navy title bar / brand header (#1e1b4b - #1e1338).
+  - Pop-up modals in ocean/deep blue container styling with elegant contrast.
+  - All Cancel / Emergency / Destructive actions styled in vibrant signal red (#dc2626 / #ef4444).
+*/
+
+:root {
+  --bg-primary: #ffffff;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f8fafc;
+  --text-main: #0f172a;
+  --text-muted: #334155;
+  --border-soft: #e2e8f0;
+  
+  /* Purple Navy Title Bar */
+  --header-bg-from: #1e1b4b; /* deep indigo purple navy */
+  --header-bg-to: #172554;   /* deep navy blue */
+  
+  /* Blue Popups */
+  --modal-bg: #0f172a;
+  --modal-border: #1e3a8a;
+  --modal-header-from: #1e3a8a;
+  --modal-header-to: #1d4ed8;
+
+  /* Red Cancel / Destructive */
+  --danger-red: #dc2626;
 }
 
-.theme-basic .bg-neutral-950 {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
+body {
+  background-color: #ffffff;
+  color: #0f172a;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
-.theme-basic .bg-neutral-900,
-.theme-basic .bg-neutral-900\/90,
-.theme-basic .bg-neutral-900\/95 {
+/* Custom Purple Navy Header Bar Class */
+.bg-purple-navy-header {
+  background: linear-gradient(135deg, #1e1b4b 0%, #1e1b4b 45%, #172554 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid #312e81 !important;
+}
+
+.bg-purple-navy-subbar {
+  background: linear-gradient(180deg, #18153d 0%, #101935 100%) !important;
+  border-top: 1px solid #2e2863 !important;
+}
+
+/* Modal Blue Theme Overrides */
+.modal-blue-surface {
+  background: linear-gradient(180deg, #0b132b 0%, #0f172a 100%) !important;
+  border: 1.5px solid #2563eb !important;
+  color: #f8fafc !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(37, 99, 235, 0.25) !important;
+}
+
+.modal-blue-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #3b82f6 !important;
+}
+
+/* Global High-Contrast White Background theme utility support */
+.theme-light-crisp {
   background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
-.theme-basic .bg-neutral-800,
-.theme-basic .bg-neutral-850 {
-  background-color: #f1f5f9 !important;
-  color: #1e293b !important;
-}
-
-.theme-basic .text-white {
+.theme-light-crisp .bg-neutral-950 {
+  background-color: #ffffff !important;
   color: #0f172a !important;
 }
 
-.theme-basic .text-neutral-100,
-.theme-basic .text-neutral-200,
-.theme-basic .text-neutral-300 {
+.theme-light-crisp .bg-neutral-900,
+.theme-light-crisp .bg-neutral-900\/90,
+.theme-light-crisp .bg-neutral-900\/95,
+.theme-light-crisp .bg-neutral-900\/70 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #e2e8f0 !important;
+}
+
+.theme-light-crisp .bg-neutral-800,
+.theme-light-crisp .bg-neutral-850 {
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+.theme-light-crisp .text-white {
+  color: #0f172a !important;
+}
+
+.theme-light-crisp .text-neutral-100,
+.theme-light-crisp .text-neutral-200,
+.theme-light-crisp .text-neutral-300 {
   color: #1e293b !important;
 }
 
-.theme-basic .text-neutral-400,
-.theme-basic .text-neutral-500 {
+.theme-light-crisp .text-neutral-400,
+.theme-light-crisp .text-neutral-500 {
   color: #475569 !important;
 }
 
-.theme-basic .border-neutral-800,
-.theme-basic .border-neutral-700,
-.theme-basic .border-neutral-850 {
-  border-color: #cbd5e1 !important;
+.theme-light-crisp .border-neutral-800,
+.theme-light-crisp .border-neutral-700,
+.theme-light-crisp .border-neutral-850 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Standardize Red Buttons for All Cancel & Reject Operations */
+.btn-action-cancel,
+button[data-action="cancel"],
+.btn-danger-red {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #b91c1c !important;
+}
+
+.btn-action-cancel:hover,
+button[data-action="cancel"]:hover,
+.btn-danger-red:hover {
+  background-color: #b91c1c !important;
 }

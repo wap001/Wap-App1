@@ -517,19 +517,19 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
         >
           <div
             id="cancel-ride-confirmation-modal"
-            className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 sm:p-6 max-w-lg w-full shadow-2xl space-y-4 my-auto"
+            className="modal-blue-surface rounded-2xl p-5 sm:p-6 max-w-lg w-full shadow-2xl space-y-4 my-auto ring-1 ring-blue-500/30"
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-neutral-800 pb-3 gap-3">
+            <div className="flex items-start justify-between border-b border-blue-800/60 pb-3 gap-3">
               <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400 shrink-0 mt-0.5">
+                <div className="w-10 h-10 rounded-xl bg-red-600 border border-red-500 flex items-center justify-center text-white shrink-0 mt-0.5 shadow-md">
                   <AlertTriangle className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 id="cancel-ride-modal-title" className="text-base font-bold text-white leading-snug">
                     {t.cancelRideConfirmationTitle}
                   </h3>
-                  <p className="text-xs text-neutral-300 mt-1 leading-relaxed">
+                  <p className="text-xs text-blue-100 mt-1 leading-relaxed">
                     {t.cancelRideWarning}
                   </p>
                 </div>
@@ -539,7 +539,7 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
                 <button
                   type="button"
                   onClick={handlePlayCancelWarningAudio}
-                  className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-amber-400 border border-neutral-700 transition"
+                  className="p-2 rounded-lg bg-blue-900/60 hover:bg-blue-800 text-amber-300 border border-blue-700 transition"
                   title={t.voicePrompt}
                 >
                   <Volume2 className="w-4 h-4" />
@@ -547,7 +547,7 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowCancelModal(false)}
-                  className="p-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white transition text-xs"
+                  className="p-2 rounded-lg bg-red-600 hover:bg-red-500 text-white transition text-xs shadow cursor-pointer"
                   title="Close"
                 >
                   <X className="w-4 h-4" />
@@ -671,30 +671,32 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
       {/* Share Live Trip Modal */}
       {showShareModal && (
         <div className="fixed inset-0 z-50 bg-neutral-950/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-neutral-900 border border-neutral-700 rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150">
+          <div className="modal-blue-surface rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-blue-500/30">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
+            <div className="flex items-center justify-between border-b border-blue-800/60 pb-3">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-blue-600/30 border border-blue-400/50 text-white flex items-center justify-center">
                   <Share2 className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="text-sm font-bold text-white flex items-center gap-2">
                     <span>{t.shareTripModalTitle}</span>
-                    <span className="text-[10px] bg-cyan-500/20 text-cyan-300 font-mono px-2 py-0.5 rounded-full">
+                    <span className="text-[10px] bg-blue-500/30 text-blue-200 font-mono px-2 py-0.5 rounded-full border border-blue-400">
                       LIVE GPS
                     </span>
                   </h3>
-                  <p className="text-[11px] text-neutral-400">{t.shareTripSubtitle}</p>
+                  <p className="text-[11px] text-blue-100/80">{t.shareTripSubtitle}</p>
                 </div>
               </div>
               <button
                 id="btn-close-share-modal"
                 type="button"
                 onClick={() => setShowShareModal(false)}
-                className="text-neutral-400 hover:text-white text-xs p-1.5 rounded-lg bg-neutral-800 hover:bg-neutral-700 transition"
+                className="text-white hover:bg-red-600 bg-red-600/80 text-xs p-1.5 rounded-lg transition shadow flex items-center gap-1 font-bold cursor-pointer"
+                title="Close"
               >
                 <X className="w-4 h-4" />
+                <span className="hidden sm:inline">Close</span>
               </button>
             </div>
 
@@ -1616,9 +1618,9 @@ export const CustomerInterface: React.FC<CustomerInterfaceProps> = ({
             id="btn-cancel-ride"
             type="button"
             onClick={() => setShowCancelModal(true)}
-            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-500/40 bg-red-950/20 hover:bg-red-900/40 text-red-300 font-semibold text-xs transition cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-red-600 bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition cursor-pointer shadow-md"
           >
-            <XCircle className="w-4 h-4 text-red-400" />
+            <XCircle className="w-4 h-4 text-white" />
             <span>{t.cancelRide}</span>
           </button>
 

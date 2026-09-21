@@ -155,11 +155,11 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="modal-blue-surface rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-blue-500/30">
         {/* Header Bar */}
-        <div className="px-6 py-4 bg-neutral-950 border-b border-neutral-800 flex items-center justify-between gap-4">
+        <div className="px-6 py-4 modal-blue-header flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-2xl bg-amber-400/10 border border-amber-400/30 text-amber-400">
+            <div className="p-2.5 rounded-2xl bg-white/15 border border-white/25 text-amber-300">
               <Coins className="w-5 h-5" />
             </div>
             <div>
@@ -167,11 +167,11 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
                 <h2 className="text-base sm:text-lg font-bold text-white">
                   Liberté Cash (LBC) Brokerage & Financial Freedom Portal
                 </h2>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 text-[10px] font-bold border border-emerald-800">
+                <span className="px-2 py-0.5 rounded-full bg-blue-950 text-blue-200 text-[10px] font-bold border border-blue-400">
                   Live API Linked
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-blue-100/90">
                 167 LBC = 1 Liberty Cash ($1.00 USD Peg) • Min. $0.50 Purchasing Floor • {LBC_TREASURY_APY}% APY Daily Yield
               </p>
             </div>
@@ -179,9 +179,11 @@ export const BrokerageIntegrationOverlay: React.FC<BrokerageIntegrationOverlayPr
 
           <button
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition"
+            className="p-2 text-white hover:bg-red-600 bg-red-600/80 rounded-xl transition cursor-pointer shadow-md flex items-center gap-1 text-xs font-bold"
+            title="Close Portal"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
 

@@ -35,6 +35,7 @@ import {
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { ActiveRole } from './Header';
+import { WapLogo } from './WapLogo';
 
 export type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
@@ -594,22 +595,9 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
   return (
     <div id="welcome-landing-interface" className="w-full max-w-5xl mx-auto py-6 px-3 sm:px-6">
       {/* Top Banner & Accessibility Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-neutral-900 border border-neutral-800 p-4 rounded-2xl shadow-lg">
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 flex items-center justify-center text-neutral-950 font-black shadow-md">
-            <Bike className="w-6 h-6 text-neutral-950" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-white text-lg tracking-tight">WAP PLATFORM</span>
-              <span className="bg-amber-400/20 text-amber-300 text-[10px] font-mono font-bold px-2 py-0.5 rounded-full border border-amber-400/30">
-                OFFICIAL PORTAL
-              </span>
-            </div>
-            <p className="text-xs text-neutral-400">
-              Caribbean On-Demand Motorcycle Transit, Courier Logistics &amp; Financial Freedom
-            </p>
-          </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-purple-navy-header border border-indigo-900/60 p-4 rounded-2xl shadow-xl text-white">
+        <div className="flex items-center gap-4">
+          <WapLogo size="lg" variant="full" showTagline={true} />
         </div>
 
         {/* Voice Audio Guidance & Language Selector */}

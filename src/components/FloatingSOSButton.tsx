@@ -331,13 +331,14 @@ export const FloatingSOSButton: React.FC<FloatingSOSButtonProps> = ({
                 <div className="flex gap-3 justify-center pt-2">
                   <button
                     onClick={cancelCountdown}
-                    className="px-5 py-2.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-neutral-200 font-bold text-xs transition border border-neutral-700"
+                    className="px-5 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition border border-red-500 shadow-md cursor-pointer flex items-center gap-1.5"
                   >
-                    Cancel / False Alarm
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel / False Alarm</span>
                   </button>
                   <button
                     onClick={triggerDistressBeacon}
-                    className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-black text-xs transition shadow-lg flex items-center gap-1.5"
+                    className="px-6 py-2.5 rounded-xl bg-red-700 hover:bg-red-600 text-white font-black text-xs transition shadow-lg flex items-center gap-1.5 border border-red-500 cursor-pointer animate-pulse"
                   >
                     <ShieldAlert className="w-4 h-4" /> Trigger Immediately
                   </button>

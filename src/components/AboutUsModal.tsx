@@ -45,29 +45,29 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
-      <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-white/10">
+      <div className="modal-blue-surface rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-blue-500/30">
         
         {/* Modal Header */}
-        <div className="p-5 sm:p-6 border-b border-neutral-800/80 bg-neutral-950/70 flex items-center justify-between shrink-0">
+        <div className="p-5 sm:p-6 modal-blue-header flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-amber-300">
               <Info className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">About Wap Platform</h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-400 border border-amber-400/30">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-900/60 text-blue-200 border border-blue-400/40">
                   Global Mobility &amp; Dignity
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-blue-100/90">
                 Building consistent daily livelihoods, formal legal protection, and financial freedom.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-neutral-400 hover:text-white rounded-xl hover:bg-neutral-800 transition cursor-pointer"
+            className="p-2 text-blue-200 hover:text-white rounded-xl hover:bg-white/10 transition cursor-pointer"
             title="Close About Us"
           >
             <X className="w-5 h-5" />
@@ -332,9 +332,10 @@ export const AboutUsModal: React.FC<AboutUsModalProps> = ({
             )}
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-bold text-xs transition shadow cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition shadow-md cursor-pointer flex items-center gap-1.5"
             >
-              Close
+              <X className="w-3.5 h-3.5" />
+              <span>Close</span>
             </button>
           </div>
         </div>

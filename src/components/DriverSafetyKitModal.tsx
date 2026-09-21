@@ -124,11 +124,11 @@ export const DriverSafetyKitModal: React.FC<DriverSafetyKitModalProps> = ({
       id="driver-safety-kit-modal"
       className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 overflow-y-auto animate-fadeIn"
     >
-      <div className="w-full max-w-2xl bg-neutral-950 border border-neutral-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-2xl modal-blue-surface rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-blue-500/30">
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-neutral-900 via-neutral-900 to-amber-950/30 border-b border-neutral-800 flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 modal-blue-header flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-400 flex items-center justify-center shadow-inner">
+            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/25 text-amber-300 flex items-center justify-center shadow-inner">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -136,11 +136,11 @@ export const DriverSafetyKitModal: React.FC<DriverSafetyKitModalProps> = ({
                 <h3 className="text-base font-bold text-white tracking-tight">
                   Driver Safety Kit
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-950 text-blue-200 border border-blue-400">
                   24/7 Rapid Shield
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-blue-100/90">
                 {driverName} • {vehicleModel} ({plateNumber})
               </p>
             </div>
@@ -149,10 +149,11 @@ export const DriverSafetyKitModal: React.FC<DriverSafetyKitModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition cursor-pointer"
+            className="p-2 text-white hover:bg-red-600 bg-red-600/80 rounded-xl transition cursor-pointer shadow-md flex items-center gap-1 text-xs font-bold"
             title="Close Safety Kit"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
 

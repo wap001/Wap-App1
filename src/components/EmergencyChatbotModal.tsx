@@ -169,25 +169,25 @@ export const EmergencyChatbotModal: React.FC<EmergencyChatbotModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
-      <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-xl w-full h-[650px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-white/10">
+      <div className="modal-blue-surface rounded-3xl max-w-xl w-full h-[650px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-blue-500/30">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-neutral-800/80 bg-neutral-950/80 flex items-center justify-between shrink-0">
+        <div className="p-4 sm:p-5 modal-blue-header flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="relative">
-              <div className="w-10 h-10 rounded-2xl bg-red-500/15 border border-red-500/30 flex items-center justify-center text-red-400">
+              <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/30 flex items-center justify-center text-white">
                 <Bot className="w-5 h-5" />
               </div>
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-neutral-900 animate-pulse" />
+              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-blue-900 animate-pulse" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white tracking-tight">Wap Emergency AI Assistant</h3>
-                <span className="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-red-950 text-red-300 border border-red-800">
+                <span className="text-[9px] uppercase font-mono px-1.5 py-0.2 rounded bg-blue-950 text-blue-200 border border-blue-400">
                   Live 24/7
                 </span>
               </div>
-              <p className="text-[11px] text-neutral-400">
+              <p className="text-[11px] text-blue-100/80">
                 Instant incident triage, non-payment protection &amp; distress coordination
               </p>
             </div>
@@ -195,10 +195,11 @@ export const EmergencyChatbotModal: React.FC<EmergencyChatbotModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-white rounded-xl hover:bg-neutral-800 transition cursor-pointer"
+            className="p-2 text-white hover:bg-red-600 bg-red-600/80 rounded-xl transition cursor-pointer shadow-md flex items-center gap-1 text-xs font-bold"
             title="Close Assistant"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
 

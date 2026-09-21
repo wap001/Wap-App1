@@ -47,32 +47,33 @@ export const DriverContractModal: React.FC<DriverContractModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 animate-in fade-in duration-200">
-      <div className="bg-neutral-900 border border-neutral-800 rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-white/10">
+      <div className="modal-blue-surface rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden ring-1 ring-blue-500/30">
         
         {/* Header */}
-        <div className="p-5 sm:p-6 border-b border-neutral-800/80 bg-neutral-950/70 flex items-center justify-between shrink-0">
+        <div className="p-5 sm:p-6 modal-blue-header flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-400/15 border border-emerald-400/30 flex items-center justify-center text-emerald-400">
+            <div className="w-10 h-10 rounded-2xl bg-white/15 border border-white/25 flex items-center justify-center text-white">
               <Scale className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">Official Driver Partner Contract</h2>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-950 text-blue-200 border border-blue-400">
                   Legally Registered &amp; Verified
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-blue-100/90">
                 Statutory bilateral agreement for professional transport authorization &amp; rights protection.
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 text-neutral-400 hover:text-white rounded-xl hover:bg-neutral-800 transition cursor-pointer"
+            className="p-2 text-white hover:bg-red-600 bg-red-600/80 rounded-xl transition cursor-pointer shadow-md flex items-center gap-1 text-xs font-bold"
             title="Close Contract"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span className="hidden sm:inline">Close</span>
           </button>
         </div>
 
@@ -187,9 +188,10 @@ export const DriverContractModal: React.FC<DriverContractModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-bold text-xs transition shadow cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs transition shadow cursor-pointer flex items-center gap-1.5"
             >
-              Done
+              <X className="w-3.5 h-3.5" />
+              <span>Close / Cancel</span>
             </button>
           </div>
         </div>

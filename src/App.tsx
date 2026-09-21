@@ -45,9 +45,9 @@ export default function App() {
   const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
   const [themeMode, setThemeMode] = useState<'basic' | 'dark'>(() => {
     try {
-      return (localStorage.getItem('wap_theme_mode') as 'basic' | 'dark') || 'dark';
+      return (localStorage.getItem('wap_theme_mode') as 'basic' | 'dark') || 'basic';
     } catch {
-      return 'dark';
+      return 'basic';
     }
   });
 
@@ -294,7 +294,7 @@ export default function App() {
   };
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950 transition-colors duration-200 ${themeMode === 'basic' ? 'theme-basic bg-slate-50 text-slate-900' : 'bg-neutral-950 text-neutral-100'}`}>
+    <div className={`min-h-screen flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950 transition-colors duration-200 ${themeMode === 'basic' ? 'theme-light-crisp bg-white text-slate-900' : 'bg-neutral-950 text-neutral-100'}`}>
       {/* Global Header with Role-Specific Navigation */}
       <Header
         selectedRegion={selectedRegion}

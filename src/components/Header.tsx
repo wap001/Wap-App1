@@ -34,6 +34,7 @@ import { REGIONS } from '../data/mockData';
 import { translations } from '../data/translations';
 import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 import { AuthUserData } from './WelcomeLandingInterface';
+import { IdentityVerificationStatusWidget } from './IdentityVerificationStatusWidget';
 
 export type ActiveRole = 'customer' | 'driver' | 'merchant' | 'admin';
 
@@ -74,6 +75,7 @@ interface HeaderProps {
   activeTab?: ActiveTabId;
   onSelectTab?: (tab: ActiveTabId) => void;
   currentUser?: AuthUserData | null;
+  onUpdateUserVerification?: (user: AuthUserData) => void;
   isWelcomeActive?: boolean;
   onToggleWelcome?: () => void;
   onSignOut?: () => void;
@@ -93,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   onSelectTab,
   currentUser,
+  onUpdateUserVerification,
   isWelcomeActive,
   onToggleWelcome,
   onSignOut,
@@ -254,23 +257,32 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* User Auth Status / Welcome & Sign In Button */}
           {currentUser ? (
-            <div className="flex items-center gap-1.5 bg-neutral-800 border border-neutral-700 rounded-md py-0.5 px-2">
-              <User className="w-3 h-3 text-amber-400 shrink-0" />
-              <div className="max-w-[120px] truncate text-[11px] font-semibold text-white">
-                {currentUser.name}
+            <div className="flex items-center gap-1.5">
+              {/* Identity Verification Status Widget in Header (Compact with popover HUD) */}
+              <IdentityVerificationStatusWidget
+                user={currentUser}
+                onUpdateUserVerification={onUpdateUserVerification}
+                compact={true}
+              />
+
+              <div className="flex items-center gap-1.5 bg-neutral-800 border border-neutral-700 rounded-md py-0.5 px-2">
+                <User className="w-3 h-3 text-amber-400 shrink-0" />
+                <div className="max-w-[110px] truncate text-[11px] font-semibold text-white">
+                  {currentUser.name}
+                </div>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-neutral-950 font-bold hidden sm:inline">
+                  {currentUser.role.toUpperCase()}
+                </span>
+                <button
+                  id="header-signout-btn"
+                  type="button"
+                  onClick={onSignOut}
+                  className="ml-1 text-neutral-400 hover:text-red-300 p-0.5 transition cursor-pointer"
+                  title="Sign out of account"
+                >
+                  <LogOut className="w-3 h-3" />
+                </button>
               </div>
-              <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-neutral-950 font-bold hidden sm:inline">
-                {currentUser.role.toUpperCase()}
-              </span>
-              <button
-                id="header-signout-btn"
-                type="button"
-                onClick={onSignOut}
-                className="ml-1 text-neutral-400 hover:text-red-300 p-0.5 transition cursor-pointer"
-                title="Sign out of account"
-              >
-                <LogOut className="w-3 h-3" />
-              </button>
             </div>
           ) : (
             <button

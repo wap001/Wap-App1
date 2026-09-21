@@ -26,6 +26,7 @@ import { VendorInterface } from './components/VendorInterface';
 import { AdminPanelWorkspace, AdminSectionId } from './components/AdminPanelWorkspace';
 import { FloatingSOSButton } from './components/FloatingSOSButton';
 import { WelcomeLandingInterface, AuthUserData } from './components/WelcomeLandingInterface';
+import { IdentityVerificationStatusWidget } from './components/IdentityVerificationStatusWidget';
 import { translations } from './data/translations';
 import { REGIONS } from './data/mockData';
 
@@ -40,27 +41,49 @@ export default function App() {
   const [audioTranscript, setAudioTranscript] = useState<string | null>(null);
   const [isMobileFrameMode, setIsMobileFrameMode] = useState(false);
 
-  // Authenticated user session state (initialized from localStorage)
+  // Default demo authenticated user ensuring Identity Verification Status is immediately visible
+  const DEFAULT_DEMO_USER: AuthUserData = {
+    id: 'usr_caribbean_verified',
+    name: 'Jean-Luc Dessalines',
+    email: 'jeanluc.dessalines@wap-transport.ht',
+    phone: '+509 3712-8821',
+    role: 'customer',
+    region: 'haiti',
+    subscriptionTier: 'freedom_plus',
+    subscriptionName: 'Wap Plus Freedom Pass',
+    lbcBonus: 2850,
+    signedUpAt: '2026-03-12T10:00:00.000Z',
+    verificationStatus: 'pending',
+    verificationProgress: 65,
+    verificationNotes: 'Official passport scan submitted and undergoing automated MRZ checksum validation & CARICOM security screening.',
+    passportDocument: {
+      fileName: 'republic_haiti_passport_scan.pdf',
+      fileSize: '2.4 MB',
+      fileType: 'application/pdf',
+      uploadedAt: '2026-03-12T10:15:00.000Z',
+      passportNumber: 'P48291032',
+      issuingCountry: 'Haiti (HT)',
+      expirationDate: '2031-10-18',
+    },
+  };
+
+  // Authenticated user session state (initialized from localStorage with fallback to Caribbean demo profile)
   const [currentUser, setCurrentUser] = useState<AuthUserData | null>(() => {
     try {
       const saved = localStorage.getItem('wap_auth_user');
-      return saved ? JSON.parse(saved) : null;
+      return saved ? JSON.parse(saved) : DEFAULT_DEMO_USER;
     } catch {
-      return null;
+      return DEFAULT_DEMO_USER;
     }
   });
 
-  // Welcome Landing Interface display state
+  // Welcome Landing Interface display state (defaults to false so user immediately accesses the app & verification status)
   const [isWelcomeActive, setIsWelcomeActive] = useState<boolean>(() => {
     try {
       const params = new URLSearchParams(window.location.search);
-      if (params.get('view') === 'welcome') return true;
-      if (params.get('role')) return false;
-      const saved = localStorage.getItem('wap_auth_user');
-      // If no saved user session and no specific role deep link, present the Welcome Interface
-      return !saved;
+      return params.get('view') === 'welcome';
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -164,6 +187,9 @@ export default function App() {
     setActiveTab(role);
     setIsWelcomeActive(false);
     updateUrlForRole(role);
+    if (role !== 'admin') {
+      setCurrentUser((prev) => (prev ? { ...prev, role: role as 'customer' | 'driver' | 'merchant' } : prev));
+    }
   };
 
   const handleSelectTab = (tab: ActiveTabId) => {
@@ -172,12 +198,15 @@ export default function App() {
     if (tab === 'customer' || tab === 'simulator') {
       setActiveRole('customer');
       updateUrlForRole('customer');
+      setCurrentUser((prev) => (prev ? { ...prev, role: 'customer' } : prev));
     } else if (tab === 'driver') {
       setActiveRole('driver');
       updateUrlForRole('driver');
+      setCurrentUser((prev) => (prev ? { ...prev, role: 'driver' } : prev));
     } else if (tab === 'merchant') {
       setActiveRole('merchant');
       updateUrlForRole('merchant');
+      setCurrentUser((prev) => (prev ? { ...prev, role: 'merchant' } : prev));
     } else {
       setActiveRole('admin');
       updateUrlForRole('admin');
@@ -228,6 +257,15 @@ export default function App() {
     setIsWelcomeActive((prev) => !prev);
   };
 
+  const handleUpdateUserVerification = (updatedUser: AuthUserData) => {
+    setCurrentUser(updatedUser);
+    try {
+      localStorage.setItem('wap_auth_user', JSON.stringify(updatedUser));
+    } catch {
+      // safe fallback
+    }
+  };
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col font-sans selection:bg-amber-400 selection:text-neutral-950">
       {/* Global Header with Role-Specific Navigation */}
@@ -245,31 +283,41 @@ export default function App() {
         onPlayVoiceGuide={handleGlobalVoiceGuide}
         isAudioPlaying={isAudioPlaying}
         currentUser={currentUser}
+        onUpdateUserVerification={handleUpdateUserVerification}
         isWelcomeActive={isWelcomeActive}
         onToggleWelcome={handleToggleWelcome}
         onSignOut={handleSignOut}
       />
 
-      {/* Authenticated User Quick Info Banner */}
-      {currentUser && !isWelcomeActive && (
-        <div className="bg-neutral-900/90 border-b border-amber-500/20 px-4 py-1.5 text-xs text-neutral-300">
-          <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-              <span>
-                Signed in as <strong className="text-white">{currentUser.name}</strong> ({currentUser.email})
-              </span>
-              <span className="text-amber-400 font-semibold">• {currentUser.subscriptionName}</span>
-              <span className="text-neutral-400 hidden sm:inline">• {currentUser.lbcBonus} LBC Freedom Balance</span>
+      {/* Authenticated User Profile Header & Identity Verification Status Widget */}
+      {currentUser && (
+        <div className="bg-neutral-900/95 border-b border-amber-500/25 px-4 py-3 text-xs text-neutral-300 shadow-lg">
+          <div className="max-w-7xl mx-auto space-y-2.5">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shrink-0 animate-pulse" />
+                <span className="text-neutral-400">User Profile:</span>
+                <strong className="text-white font-bold">{currentUser.name}</strong>
+                <span className="text-neutral-400 hidden sm:inline">({currentUser.email})</span>
+                <span className="text-amber-400 font-semibold">• {currentUser.subscriptionName}</span>
+                <span className="text-neutral-400 hidden md:inline">• {currentUser.lbcBonus} LBC Freedom Balance (Investing Equity)</span>
+              </div>
+              <button
+                id="top-welcome-portal-link"
+                type="button"
+                onClick={handleToggleWelcome}
+                className="text-amber-400 hover:text-amber-300 hover:underline font-semibold text-xs cursor-pointer flex items-center gap-1"
+              >
+                <span>{isWelcomeActive ? '← Back to App Radar' : 'Subscription & Welcome Portal →'}</span>
+              </button>
             </div>
-            <button
-              id="top-welcome-portal-link"
-              type="button"
-              onClick={handleToggleWelcome}
-              className="text-amber-400 hover:text-amber-300 hover:underline font-semibold text-xs cursor-pointer"
-            >
-              Subscription &amp; Welcome Portal →
-            </button>
+
+            {/* Prominent Identity Verification Status Widget in Profile Header */}
+            <IdentityVerificationStatusWidget
+              user={currentUser}
+              onUpdateUserVerification={handleUpdateUserVerification}
+              compact={false}
+            />
           </div>
         </div>
       )}

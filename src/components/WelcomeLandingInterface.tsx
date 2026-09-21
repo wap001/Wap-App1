@@ -3,6 +3,7 @@ import {
   Bike,
   Store,
   ShieldCheck,
+  ShieldAlert,
   Mail,
   Lock,
   Eye,
@@ -24,11 +25,29 @@ import {
   Clock,
   Zap,
   Tag,
-  ArrowLeft
+  ArrowLeft,
+  FileText,
+  UploadCloud,
+  FileCheck,
+  AlertTriangle,
+  FileUp,
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { ActiveRole } from './Header';
+
+export type VerificationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface PassportDocumentInfo {
+  fileName: string;
+  fileSize: string;
+  fileType: string;
+  dataUrl?: string;
+  uploadedAt: string;
+  passportNumber: string;
+  issuingCountry: string;
+  expirationDate?: string;
+}
 
 export interface AuthUserData {
   id: string;
@@ -41,6 +60,10 @@ export interface AuthUserData {
   subscriptionName: string;
   lbcBonus: number;
   signedUpAt: string;
+  verificationStatus: VerificationStatus;
+  verificationProgress: number;
+  verificationNotes?: string;
+  passportDocument?: PassportDocumentInfo;
 }
 
 interface WelcomeLandingInterfaceProps {
@@ -102,6 +125,23 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
   const [acceptTerms, setAcceptTerms] = useState<boolean>(true);
   const [signupError, setSignupError] = useState<string | null>(null);
 
+  // Mandatory Passport upload & identity verification state for all roles
+  const [passportFile, setPassportFile] = useState<File | null>(null);
+  const [passportDocData, setPassportDocData] = useState<PassportDocumentInfo | null>(null);
+  const [passportNumber, setPassportNumber] = useState<string>('');
+  const [passportCountry, setPassportCountry] = useState<string>(
+    currentRegion === 'haiti'
+      ? 'Haiti (HT)'
+      : currentRegion === 'french_guiana'
+      ? 'French Guiana (GF/FR)'
+      : currentRegion === 'guyana'
+      ? 'Guyana (GY)'
+      : 'Suriname (SR)'
+  );
+  const [passportExpiry, setPassportExpiry] = useState<string>('2031-12-31');
+  const [passportPreviewUrl, setPassportPreviewUrl] = useState<string | null>(null);
+  const [isPassportDragging, setIsPassportDragging] = useState<boolean>(false);
+
   // Forgot password simulation
   const [showForgotPassword, setShowForgotPassword] = useState<boolean>(false);
   const [forgotEmail, setForgotEmail] = useState<string>('');
@@ -129,7 +169,7 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       id: 'customer_pass',
       name: 'Wap Plus Freedom Pass',
       badge: 'Most Popular',
-      price: '$4.99',
+      price: '$2.55',
       billingPeriod: 'per month',
       lbcBonus: 250,
       popular: true,
@@ -146,7 +186,7 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       id: 'customer_family',
       name: 'Diaspora Family Circle',
       badge: 'Family & Remittance',
-      price: '$9.99',
+      price: '$4.55',
       billingPeriod: 'per month',
       lbcBonus: 600,
       description: 'Book and manage reliable transport for relatives back home across borders.',
@@ -176,10 +216,25 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       ],
     },
     {
+      id: 'driver_plus',
+      name: 'Fleet Mobility Pass',
+      badge: 'Flexible Commute',
+      price: '$2.55',
+      billingPeriod: 'per month',
+      lbcBonus: 250,
+      description: 'Keep 94% of ride fares and enjoy daily Liberté Cash dividend bonuses.',
+      benefits: [
+        '250 LBC monthly equity credit',
+        'Keep 94% of ride fares directly',
+        'Daily Liberté Cash dividend boost on completed trips',
+        'Priority dispatch allocation in suburban routes',
+      ],
+    },
+    {
       id: 'driver_pro',
       name: 'Pro Fleet Freedom Member',
       badge: 'Recommended for Full-Time',
-      price: '$7.99',
+      price: '$4.55',
       billingPeriod: 'per month',
       lbcBonus: 450,
       popular: true,
@@ -210,10 +265,25 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       ],
     },
     {
+      id: 'merchant_growth',
+      name: 'Local Merchant Growth Pass',
+      badge: 'Growing Business',
+      price: '$2.55',
+      billingPeriod: 'per month',
+      lbcBonus: 400,
+      description: 'Zero transaction swipe fees and priority express courier dispatching.',
+      benefits: [
+        '400 LBC monthly merchant investment dividends',
+        '0% payment gateway swipe fees on local wallets',
+        'Direct priority moto courier dispatch in under 5 minutes',
+        'Automated weekly local cash payouts',
+      ],
+    },
+    {
       id: 'merchant_verified',
       name: 'Verified Enterprise Partner',
       badge: 'High Volume',
-      price: '$12.99',
+      price: '$4.55',
       billingPeriod: 'per month',
       lbcBonus: 800,
       popular: true,
@@ -287,6 +357,25 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
         subscriptionName: 'Wap Plus Freedom Pass',
         lbcBonus: 2850,
         signedUpAt: new Date().toISOString(),
+        verificationStatus: 'approved',
+        verificationProgress: 100,
+        verificationNotes: 'Official passport verified with biometric validation and CARICOM regional registry.',
+        passportDocument: {
+          fileName: 'official_biometric_passport.pdf',
+          fileSize: '1.9 MB',
+          fileType: 'application/pdf',
+          uploadedAt: '2026-03-12T10:20:00.000Z',
+          passportNumber: 'P' + Math.floor(10000000 + Math.random() * 90000000),
+          issuingCountry:
+            currentRegion === 'haiti'
+              ? 'Haiti (HT)'
+              : currentRegion === 'french_guiana'
+              ? 'French Guiana (GF/FR)'
+              : currentRegion === 'guyana'
+              ? 'Guyana (GY)'
+              : 'Suriname (SR)',
+          expirationDate: '2031-10-18',
+        },
       };
 
       try {
@@ -297,6 +386,54 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
 
       onLoginSuccess(authenticatedUser);
     }, 600);
+  };
+
+  // Helper to attach sample validated passport with 1 click
+  const handleUseSamplePassport = () => {
+    const sampleNumber =
+      targetRole === 'driver' ? 'P84920194' : targetRole === 'merchant' ? 'P92038192' : 'P71928301';
+    setPassportNumber(sampleNumber);
+    setPassportDocData({
+      fileName: `official_passport_${targetRole}_scan.pdf`,
+      fileSize: '2.1 MB',
+      fileType: 'application/pdf',
+      uploadedAt: new Date().toISOString(),
+      passportNumber: sampleNumber,
+      issuingCountry: passportCountry,
+      expirationDate: '2032-06-15',
+    });
+    setPassportPreviewUrl('sample_verified');
+    setSignupError(null);
+  };
+
+  const handlePassportFileChange = (file: File | null) => {
+    if (!file) {
+      setPassportFile(null);
+      setPassportDocData(null);
+      return;
+    }
+
+    setPassportFile(file);
+    setPassportDocData({
+      fileName: file.name,
+      fileSize: `${(file.size / 1024).toFixed(1)} KB`,
+      fileType: file.type || 'application/pdf',
+      uploadedAt: new Date().toISOString(),
+      passportNumber: passportNumber || 'P48192031',
+      issuingCountry: passportCountry,
+      expirationDate: passportExpiry || '2031-12-31',
+    });
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPassportPreviewUrl(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPassportPreviewUrl(null);
+    }
+    setSignupError(null);
   };
 
   // Handle Sign up & Subscription submission
@@ -324,6 +461,19 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       return;
     }
 
+    // STRICT REQUIREMENT: Mandatory passport upload for all roles
+    if (!passportFile && !passportDocData) {
+      setSignupError(
+        'Mandatory Identity Document Missing: A valid government passport upload is strictly required for all roles (Passenger, Driver, and Merchant) to complete identity verification and activate platform access.'
+      );
+      return;
+    }
+
+    if (!passportNumber.trim()) {
+      setSignupError('Please enter your official Passport Document Number.');
+      return;
+    }
+
     if (!acceptTerms) {
       setSignupError('Please accept the community safety and service agreement.');
       return;
@@ -336,6 +486,17 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
     setTimeout(() => {
       setIsSubmitting(false);
 
+      const finalPassportDoc: PassportDocumentInfo = {
+        fileName: passportFile ? passportFile.name : (passportDocData?.fileName || 'official_passport.pdf'),
+        fileSize: passportFile ? `${(passportFile.size / 1024).toFixed(1)} KB` : (passportDocData?.fileSize || '1.8 MB'),
+        fileType: passportFile?.type || (passportDocData?.fileType || 'application/pdf'),
+        dataUrl: passportPreviewUrl || undefined,
+        uploadedAt: new Date().toISOString(),
+        passportNumber: passportNumber.trim().toUpperCase(),
+        issuingCountry: passportCountry,
+        expirationDate: passportExpiry || '2031-12-31',
+      };
+
       const newUser: AuthUserData = {
         id: 'usr_' + Math.random().toString(36).substring(2, 9),
         name: signupName.trim(),
@@ -347,6 +508,10 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
         subscriptionName: plan.name,
         lbcBonus: plan.lbcBonus + (promoCode.trim().toUpperCase() === 'LIBERTE2026' ? 100 : 0),
         signedUpAt: new Date().toISOString(),
+        verificationStatus: 'pending',
+        verificationProgress: 65,
+        verificationNotes: 'Passport submitted during registration. In queue for machine-readable zone (MRZ) validation.',
+        passportDocument: finalPassportDoc,
       };
 
       try {
@@ -372,6 +537,25 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       subscriptionName: plan === 'driver_pro' ? 'Pro Fleet Freedom Member' : plan === 'merchant_verified' ? 'Verified Enterprise Partner' : 'Wap Plus Freedom Pass',
       lbcBonus: 2850,
       signedUpAt: new Date().toISOString(),
+      verificationStatus: 'approved',
+      verificationProgress: 100,
+      verificationNotes: 'Official passport verified with biometric validation and CARICOM regional registry.',
+      passportDocument: {
+        fileName: `${role}_official_passport.pdf`,
+        fileSize: '2.1 MB',
+        fileType: 'application/pdf',
+        uploadedAt: '2026-03-01T09:00:00.000Z',
+        passportNumber: role === 'driver' ? 'P84920194' : role === 'merchant' ? 'P92038192' : 'P71928301',
+        issuingCountry:
+          currentRegion === 'haiti'
+            ? 'Haiti (HT)'
+            : currentRegion === 'french_guiana'
+            ? 'French Guiana (GF/FR)'
+            : currentRegion === 'guyana'
+            ? 'Guyana (GY)'
+            : 'Suriname (SR)',
+        expirationDate: '2031-10-18',
+      },
     };
 
     try {
@@ -1064,6 +1248,204 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
                           {showSignupPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
+                    </div>
+                  </div>
+
+                  {/* Step 4: Mandatory Passport Upload for All Roles */}
+                  <div
+                    id="mandatory-passport-upload-section"
+                    className="mt-3 p-3.5 bg-neutral-950/90 rounded-2xl border-2 border-amber-500/40 space-y-3"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-lg bg-amber-400 text-neutral-950 flex items-center justify-center font-bold text-xs shrink-0">
+                          <FileText className="w-3.5 h-3.5" />
+                        </div>
+                        <div>
+                          <label className="text-xs font-bold text-white uppercase tracking-wider block">
+                            4. Mandatory Identity Verification (Passport Upload)
+                          </label>
+                          <span className="text-[11px] text-neutral-400">
+                            Strictly enforced for all roles: Passenger, Driver &amp; Merchant
+                          </span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded-md bg-rose-500/20 border border-rose-500/50 text-rose-300 text-[10px] font-bold uppercase tracking-wider">
+                        Mandatory Document
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-neutral-300 leading-relaxed">
+                      To comply with Caribbean Community cross-border transportation standards, rider/driver safety, and Liberté Cash escrow asset protection, every account holder must attach a legible government passport before platform activation.
+                    </p>
+
+                    {/* Document Upload Area */}
+                    <div
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsPassportDragging(true);
+                      }}
+                      onDragLeave={() => setIsPassportDragging(false)}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        setIsPassportDragging(false);
+                        if (e.dataTransfer.files?.[0]) {
+                          handlePassportFileChange(e.dataTransfer.files[0]);
+                        }
+                      }}
+                      className={`relative border-2 border-dashed rounded-xl p-4 text-center transition ${
+                        passportDocData || passportFile
+                          ? 'border-emerald-500/60 bg-emerald-950/20'
+                          : isPassportDragging
+                          ? 'border-amber-400 bg-amber-400/10'
+                          : 'border-neutral-700 hover:border-amber-400/60 bg-neutral-900/50'
+                      }`}
+                    >
+                      {passportDocData || passportFile ? (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-left">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                              <FileCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-white text-xs">
+                                  {passportFile?.name || passportDocData?.fileName}
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                                  Ready for Ingestion
+                                </span>
+                              </div>
+                              <span className="text-[11px] text-neutral-400 block">
+                                File Size: {passportFile ? `${(passportFile.size / 1024).toFixed(1)} KB` : passportDocData?.fileSize} • International Passport
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <label className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-300 text-xs font-semibold cursor-pointer border border-neutral-700">
+                              Replace
+                              <input
+                                id="signup-replace-passport-file"
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) handlePassportFileChange(e.target.files[0]);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setPassportFile(null);
+                                setPassportDocData(null);
+                                setPassportPreviewUrl(null);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-neutral-800 hover:bg-rose-950 text-neutral-400 hover:text-rose-400 text-xs font-semibold cursor-pointer border border-neutral-700"
+                            >
+                              Remove
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div className="w-10 h-10 mx-auto rounded-xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                            <UploadCloud className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-white">
+                              Upload Passport Document (Photo Page Scan or High-Res Color Photo)
+                            </p>
+                            <p className="text-[11px] text-neutral-400 mt-0.5">
+                              Drag and drop here, or browse from your device • PDF, PNG, JPG (Max 15MB)
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                            <label className="px-3 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 text-xs font-bold cursor-pointer transition shadow flex items-center gap-1.5">
+                              <FileUp className="w-3.5 h-3.5" />
+                              <span>Select Passport File</span>
+                              <input
+                                id="signup-passport-file-input"
+                                type="file"
+                                accept="image/*,.pdf"
+                                onChange={(e) => {
+                                  if (e.target.files?.[0]) handlePassportFileChange(e.target.files[0]);
+                                }}
+                                className="hidden"
+                              />
+                            </label>
+                            <button
+                              type="button"
+                              id="signup-use-sample-passport-btn"
+                              onClick={handleUseSamplePassport}
+                              className="px-3 py-1.5 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-amber-300 text-xs font-semibold transition border border-amber-500/30 flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Zap className="w-3.5 h-3.5 text-amber-400" />
+                              <span>⚡ Auto-fill Validated Sample (1-Click Test)</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Passport Metadata Fields */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                      <div>
+                        <label className="text-[11px] text-neutral-400 mb-1 block">
+                          Passport Document Number <span className="text-rose-400">*</span>
+                        </label>
+                        <input
+                          id="signup-input-passport-number"
+                          type="text"
+                          required
+                          value={passportNumber}
+                          onChange={(e) => setPassportNumber(e.target.value.toUpperCase())}
+                          placeholder="e.g. P48291032"
+                          className="w-full bg-neutral-900 border border-neutral-800 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-amber-300 font-mono focus:outline-none uppercase"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-neutral-400 mb-1 block">
+                          Issuing Country <span className="text-rose-400">*</span>
+                        </label>
+                        <select
+                          id="signup-input-passport-country"
+                          value={passportCountry}
+                          onChange={(e) => setPassportCountry(e.target.value)}
+                          className="w-full bg-neutral-900 border border-neutral-800 focus:border-amber-400 rounded-xl px-2.5 py-2 text-xs text-white focus:outline-none"
+                        >
+                          <option value="Haiti (HT)">🇭🇹 Haiti (HT)</option>
+                          <option value="French Guiana (GF/FR)">🇬🇫 French Guiana (GF/FR)</option>
+                          <option value="Guyana (GY)">🇬🇾 Guyana (GY)</option>
+                          <option value="Suriname (SR)">🇸🇷 Suriname (SR)</option>
+                          <option value="United States (US)">🇺🇸 United States (US)</option>
+                          <option value="France (FR)">🇫🇷 France (FR)</option>
+                          <option value="Canada (CA)">🇨🇦 Canada (CA)</option>
+                          <option value="Dominican Republic (DO)">🇩🇴 Dominican Republic (DO)</option>
+                          <option value="CARICOM Member State">🌎 Other CARICOM / International</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] text-neutral-400 mb-1 block">
+                          Expiration Date
+                        </label>
+                        <input
+                          id="signup-input-passport-expiry"
+                          type="date"
+                          value={passportExpiry}
+                          onChange={(e) => setPassportExpiry(e.target.value)}
+                          className="w-full bg-neutral-900 border border-neutral-800 focus:border-amber-400 rounded-xl px-3 py-2 text-xs text-white focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-[10px] text-neutral-400 pt-0.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <span>
+                        256-bit encrypted bank-grade vault storage. Passports are solely utilized for safety KYC and anti-fraud verification.
+                      </span>
                     </div>
                   </div>
 

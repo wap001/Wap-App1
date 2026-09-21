@@ -22,22 +22,53 @@ import {
 } from 'lucide-react';
 import { RegionId, LanguageCode, DriverProfile } from '../types/architecture';
 import { REGIONS, MOCK_DRIVERS } from '../data/mockData';
+import { IdentityVerificationStatusWidget } from './IdentityVerificationStatusWidget';
+import { AuthUserData } from './WelcomeLandingInterface';
 
 interface DriverAccountManagementProps {
   region: RegionId;
   language: LanguageCode;
   onPlaySpeech: (text: string) => void;
   onClose?: () => void;
+  currentUser?: AuthUserData | null;
+  onUpdateUserVerification?: (updatedUser: AuthUserData) => void;
 }
 
 export const DriverAccountManagement: React.FC<DriverAccountManagementProps> = ({
   region,
   language,
   onPlaySpeech,
-  onClose
+  onClose,
+  currentUser,
+  onUpdateUserVerification,
 }) => {
   const currentRegion = REGIONS[region];
   const driverData = MOCK_DRIVERS.find((d) => d.region === region) || MOCK_DRIVERS[0];
+
+  const activeDriverUser: AuthUserData = currentUser || {
+    id: 'usr_driver_jean',
+    name: driverData.fullName,
+    email: `${driverData.fullName.toLowerCase().replace(/\s+/g, '.')}@wap-fleet.ht`,
+    phone: driverData.phone,
+    role: 'driver',
+    region,
+    subscriptionTier: 'freedom_driver',
+    subscriptionName: 'Wap Fleet Driver Pass',
+    lbcBonus: 3400,
+    signedUpAt: '2026-03-01T08:00:00.000Z',
+    verificationStatus: 'approved',
+    verificationProgress: 100,
+    verificationNotes: 'Official driver passport, biometric face matching, and motorcycle commercial license certified.',
+    passportDocument: {
+      fileName: 'caribbean_driver_passport.pdf',
+      fileSize: '3.1 MB',
+      fileType: 'application/pdf',
+      uploadedAt: '2026-03-01T08:20:00.000Z',
+      passportNumber: 'P90283411',
+      issuingCountry: 'Haiti (HT)',
+      expirationDate: '2032-05-14',
+    },
+  };
 
   // Driver Personal Profile
   const [fullName, setFullName] = useState(driverData.fullName);
@@ -160,6 +191,15 @@ export const DriverAccountManagement: React.FC<DriverAccountManagementProps> = (
             <span>Voice Guide</span>
           </button>
         </div>
+      </div>
+
+      {/* Identity Verification Status in Driver Profile Header */}
+      <div className="bg-neutral-950/90 border border-amber-500/20 rounded-2xl p-4 shadow-md">
+        <IdentityVerificationStatusWidget
+          user={activeDriverUser}
+          onUpdateUserVerification={onUpdateUserVerification}
+          compact={false}
+        />
       </div>
 
       {/* Success Notification Alert */}

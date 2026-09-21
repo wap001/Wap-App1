@@ -25,12 +25,16 @@ import {
 } from 'lucide-react';
 import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
+import { IdentityVerificationStatusWidget } from './IdentityVerificationStatusWidget';
+import { AuthUserData } from './WelcomeLandingInterface';
 
 interface CustomerAccountManagementProps {
   region: RegionId;
   language: LanguageCode;
   onPlaySpeech: (text: string) => void;
   onClose?: () => void;
+  currentUser?: AuthUserData | null;
+  onUpdateUserVerification?: (updatedUser: AuthUserData) => void;
 }
 
 interface SavedAddress {
@@ -44,9 +48,37 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
   region,
   language,
   onPlaySpeech,
-  onClose
+  onClose,
+  currentUser,
+  onUpdateUserVerification,
 }) => {
   const currentRegion = REGIONS[region];
+
+  // Fallback demo user if not passed
+  const activeUser: AuthUserData = currentUser || {
+    id: 'usr_customer_daphnee',
+    name: 'Daphnée Lamour',
+    email: 'daphnee.lamour@wap-customer.ht',
+    phone: region === 'haiti' ? '+509 3712-8821' : '+594 694 45 22 10',
+    role: 'customer',
+    region,
+    subscriptionTier: 'freedom_plus',
+    subscriptionName: 'Wap Plus Freedom Pass',
+    lbcBonus: 2850,
+    signedUpAt: '2026-03-12T10:00:00.000Z',
+    verificationStatus: 'pending',
+    verificationProgress: 65,
+    verificationNotes: 'Official passport scan submitted and undergoing automated MRZ checksum check.',
+    passportDocument: {
+      fileName: 'republic_haiti_passport_scan.pdf',
+      fileSize: '2.4 MB',
+      fileType: 'application/pdf',
+      uploadedAt: '2026-03-12T10:15:00.000Z',
+      passportNumber: 'P48291032',
+      issuingCountry: 'Haiti (HT)',
+      expirationDate: '2031-10-18',
+    },
+  };
 
   // Profile Information
   const [fullName, setFullName] = useState('Daphnée Lamour');
@@ -224,6 +256,15 @@ export const CustomerAccountManagement: React.FC<CustomerAccountManagementProps>
             <span>Voice Guide</span>
           </button>
         </div>
+      </div>
+
+      {/* Identity Verification Status in Customer Profile Header */}
+      <div className="bg-neutral-950/90 border border-amber-500/20 rounded-2xl p-4 shadow-md">
+        <IdentityVerificationStatusWidget
+          user={activeUser}
+          onUpdateUserVerification={onUpdateUserVerification}
+          compact={false}
+        />
       </div>
 
       {/* Success Notification Alert */}

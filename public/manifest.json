@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "Remix Wap - Motorcycle Rides & Delivery Platform",
-  "short_name": "Remix Wap",
-  "description": "On-demand motorcycle taxi and courier logistics platform designed for immigrant communities across the Caribbean, Latin America, and Africa.",
+  "name": "Wap - Motorcycle Rides &amp; Delivery Platform",
+  "short_name": "Wap",
+  "description": "An innovative platform designed to streamline and enhance motorcycle transport and deliveries.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -15,6 +15,26 @@
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "dir": "ltr",
+  "lang": "en",
+  "display_override": [
+    "browser",
+    "standalone",
+    "window-controls-overlay",
+    "minimal-ui",
+    "fullscreen"
+  ],
+  "categories": [
+    "business",
+    "transportation"
+  ],
+  "shortcuts": [
+    {
+      "name": "Request Ride",
+      "url": "wapmove.online",
+      "description": "Book a new ride instantly."
     }
   ]
 }

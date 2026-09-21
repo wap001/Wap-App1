@@ -595,7 +595,7 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
   return (
     <div id="welcome-landing-interface" className="w-full max-w-5xl mx-auto py-6 px-3 sm:px-6">
       {/* Top Banner & Accessibility Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-purple-navy-header border border-indigo-900/60 p-4 rounded-2xl shadow-xl text-white">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6 bg-purple-navy-header border border-sky-700 p-4 rounded-2xl shadow-xl text-white">
         <div className="flex items-center gap-4">
           <WapLogo size="lg" variant="full" showTagline={true} />
         </div>

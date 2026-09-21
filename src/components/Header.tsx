@@ -135,8 +135,8 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center space-x-3">
           <WapLogo size="md" variant="full" />
-          <div className="h-5 w-px bg-indigo-900/60 hidden sm:block" />
-          <span className="hidden md:inline-block text-indigo-200/80 font-medium">
+          <div className="h-5 w-px bg-sky-400/40 hidden sm:block" />
+          <span className="hidden md:inline-block text-sky-100 font-semibold drop-shadow-sm">
             {currentRegion.flag} {currentRegion.name} ({currentRegion.sampleCity}) • {currentRegion.currency}
           </span>
         </div>
@@ -235,22 +235,22 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="theme-appearance-toggle"
               onClick={onToggleThemeMode}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors ${
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md border transition-colors cursor-pointer ${
                 themeMode === 'basic'
-                  ? 'bg-amber-100/90 text-amber-900 border-amber-300 hover:bg-amber-200'
-                  : 'bg-neutral-800 text-neutral-300 border-neutral-700 hover:bg-neutral-700'
+                  ? 'bg-white text-sky-950 border-sky-300 font-bold hover:bg-sky-50 shadow-sm'
+                  : 'bg-sky-950/70 text-sky-200 border-sky-700 hover:bg-sky-900/70'
               }`}
               title={themeMode === 'basic' ? 'Basic Clean Theme active. Click for Dark Theme' : 'Dark Theme active. Click for Basic Clean Theme'}
             >
               {themeMode === 'basic' ? (
                 <>
-                  <Sun className="w-3.5 h-3.5 text-amber-600" />
-                  <span className="text-[11px] font-semibold">Basic Theme</span>
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[11px] font-bold">White Theme</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-3.5 h-3.5 text-indigo-400" />
-                  <span className="text-[11px] font-medium text-neutral-300">Dark Theme</span>
+                  <Moon className="w-3.5 h-3.5 text-sky-300" />
+                  <span className="text-[11px] font-medium text-sky-200">Dark Theme</span>
                 </>
               )}
             </button>
@@ -261,10 +261,10 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="header-about-us-btn"
               onClick={onOpenAboutUs}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-neutral-700 bg-neutral-800 hover:bg-neutral-700 text-neutral-300 hover:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-sky-600/70 bg-sky-900/60 hover:bg-sky-800/80 text-white transition-colors cursor-pointer shadow-sm"
               title="About Wap: Mission, Driver Legal Contracts, Safety & Liberté Cash"
             >
-              <Info className="w-3.5 h-3.5 text-amber-400" />
+              <Info className="w-3.5 h-3.5 text-amber-300" />
               <span className="text-[11px] font-semibold">About Us</span>
             </button>
           )}
@@ -274,46 +274,46 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="header-emergency-chat-btn"
               onClick={onOpenEmergencyChatbot}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-red-500/50 bg-red-950/60 hover:bg-red-900/60 text-red-200 hover:text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-red-400/60 bg-red-600 hover:bg-red-700 text-white font-bold transition-colors cursor-pointer shadow-sm"
               title="24/7 Emergency AI Assistant & Support Chat"
             >
-              <HelpCircle className="w-3.5 h-3.5 text-red-400" />
-              <span className="text-[11px] font-semibold">Emergency Support</span>
+              <HelpCircle className="w-3.5 h-3.5 text-white" />
+              <span className="text-[11px] font-bold">Emergency Support</span>
             </button>
           )}
 
           {/* Region Picker */}
-          <div className="flex items-center bg-neutral-800 rounded-md border border-neutral-700 p-0.5">
-            <span className="pl-2 pr-1 text-neutral-400">
+          <div className="flex items-center bg-sky-950/80 rounded-md border border-sky-600 p-0.5 shadow-sm">
+            <span className="pl-2 pr-1 text-sky-300">
               <MapPin className="w-3 h-3 inline mr-1" />
             </span>
             <select
               id="region-selector"
               value={selectedRegion}
               onChange={(e) => onSelectRegion(e.target.value as RegionId)}
-              className="bg-transparent text-white font-medium text-xs pr-2 py-0.5 focus:outline-none cursor-pointer"
+              className="bg-transparent text-white font-semibold text-xs pr-2 py-0.5 focus:outline-none cursor-pointer"
             >
-              <option value="haiti" className="bg-neutral-800 text-white">🇭🇹 Haiti (Port-au-Prince)</option>
-              <option value="senegal" className="bg-neutral-800 text-white">🇸🇳 Senegal (Dakar)</option>
-              <option value="french_guiana" className="bg-neutral-800 text-white">🇬🇫 Guyane (Cayenne)</option>
-              <option value="guyana" className="bg-neutral-800 text-white">🇬🇾 Guyana (Georgetown)</option>
-              <option value="suriname" className="bg-neutral-800 text-white">🇸🇷 Suriname (Paramaribo)</option>
+              <option value="haiti" className="bg-sky-900 text-white">🇭🇹 Haiti (Port-au-Prince)</option>
+              <option value="senegal" className="bg-sky-900 text-white">🇸🇳 Senegal (Dakar)</option>
+              <option value="french_guiana" className="bg-sky-900 text-white">🇬🇫 Guyane (Cayenne)</option>
+              <option value="guyana" className="bg-sky-900 text-white">🇬🇾 Guyana (Georgetown)</option>
+              <option value="suriname" className="bg-sky-900 text-white">🇸🇷 Suriname (Paramaribo)</option>
             </select>
           </div>
 
           {/* Language Picker */}
-          <div className="flex items-center bg-neutral-800 rounded-md border border-neutral-700 p-0.5">
-            <span className="pl-2 pr-1 text-neutral-400">
+          <div className="flex items-center bg-sky-950/80 rounded-md border border-sky-600 p-0.5 shadow-sm">
+            <span className="pl-2 pr-1 text-sky-300">
               <Globe className="w-3 h-3 inline mr-1" />
             </span>
             <select
               id="language-selector"
               value={selectedLanguage}
               onChange={(e) => onSelectLanguage(e.target.value as LanguageCode)}
-              className="bg-transparent text-white font-medium text-xs pr-2 py-0.5 focus:outline-none cursor-pointer"
+              className="bg-transparent text-white font-semibold text-xs pr-2 py-0.5 focus:outline-none cursor-pointer"
             >
               {languages.map((l) => (
-                <option key={l.code} value={l.code} className="bg-neutral-800 text-white">
+                <option key={l.code} value={l.code} className="bg-sky-900 text-white">
                   {l.flag} {l.label}
                 </option>
               ))}
@@ -330,19 +330,19 @@ export const Header: React.FC<HeaderProps> = ({
                 compact={true}
               />
 
-              <div className="flex items-center gap-1.5 bg-neutral-800 border border-neutral-700 rounded-md py-0.5 px-2">
+              <div className="flex items-center gap-1.5 bg-sky-950/80 border border-sky-600 rounded-md py-0.5 px-2 shadow-sm">
                 <User className="w-3 h-3 text-amber-400 shrink-0" />
                 <div className="max-w-[110px] truncate text-[11px] font-semibold text-white">
                   {currentUser.name}
                 </div>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-neutral-950 font-bold hidden sm:inline">
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400 text-slate-950 font-bold hidden sm:inline">
                   {currentUser.role.toUpperCase()}
                 </span>
                 <button
                   id="header-signout-btn"
                   type="button"
                   onClick={onSignOut}
-                  className="ml-1 text-neutral-400 hover:text-red-300 p-0.5 transition cursor-pointer"
+                  className="ml-1 text-sky-300 hover:text-red-300 p-0.5 transition cursor-pointer"
                   title="Sign out of account"
                 >
                   <LogOut className="w-3 h-3" />
@@ -384,14 +384,14 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onToggleWelcome}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
                 isWelcomeActive
-                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300'
+                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
               }`}
             >
-              <Sparkles className={`w-4 h-4 ${isWelcomeActive ? 'text-neutral-950' : 'text-amber-400'}`} />
+              <Sparkles className={`w-4 h-4 ${isWelcomeActive ? 'text-slate-950' : 'text-amber-400'}`} />
               <div className="text-left">
                 <div className="leading-tight">Welcome Portal</div>
-                <div className={`text-[10px] ${isWelcomeActive ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${isWelcomeActive ? 'text-slate-900 font-bold' : 'text-sky-200'}`}>
                   Subscription &amp; Login
                 </div>
               </div>
@@ -407,14 +407,14 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
                 !isWelcomeActive && activeRole === 'customer'
-                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300'
+                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
               }`}
             >
-              <Smartphone className={`w-4 h-4 ${activeRole === 'customer' ? 'text-neutral-950' : 'text-amber-400'}`} />
+              <Smartphone className={`w-4 h-4 ${activeRole === 'customer' ? 'text-slate-950' : 'text-amber-300'}`} />
               <div className="text-left">
                 <div className="leading-tight">Customer App</div>
-                <div className={`text-[10px] ${activeRole === 'customer' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${activeRole === 'customer' ? 'text-slate-900 font-bold' : 'text-sky-200'}`}>
                   Rides, Food &amp; Courier
                 </div>
               </div>
@@ -430,14 +430,14 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
                 !isWelcomeActive && activeRole === 'driver'
-                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300'
+                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
               }`}
             >
-              <Bike className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'driver' ? 'text-neutral-950' : 'text-emerald-400'}`} />
+              <Bike className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'driver' ? 'text-slate-950' : 'text-emerald-400'}`} />
               <div className="text-left">
                 <div className="leading-tight">Driver Partner</div>
-                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'driver' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'driver' ? 'text-slate-900 font-bold' : 'text-sky-200'}`}>
                   Radar &amp; Earnings
                 </div>
               </div>
@@ -453,14 +453,14 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
                 !isWelcomeActive && activeRole === 'merchant'
-                  ? 'bg-amber-400 text-neutral-950 shadow-md font-bold ring-2 ring-amber-400/30'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold ring-2 ring-amber-300'
+                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
               }`}
             >
-              <Store className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'merchant' ? 'text-neutral-950' : 'text-cyan-400'}`} />
+              <Store className={`w-4 h-4 ${!isWelcomeActive && activeRole === 'merchant' ? 'text-slate-950' : 'text-sky-300'}`} />
               <div className="text-left">
                 <div className="leading-tight">Merchant Portal</div>
-                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'merchant' ? 'text-neutral-900 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${!isWelcomeActive && activeRole === 'merchant' ? 'text-slate-900 font-bold' : 'text-sky-200'}`}>
                   Boutik &amp; Resto Orders
                 </div>
               </div>
@@ -476,19 +476,19 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
                 !isWelcomeActive && activeRole === 'admin'
-                  ? 'bg-red-500 text-white shadow-md font-bold ring-2 ring-red-400/40'
-                  : 'bg-neutral-900 border border-neutral-800 text-neutral-300 hover:text-white hover:border-neutral-700'
+                  ? 'bg-red-600 text-white shadow-md font-bold ring-2 ring-red-400'
+                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
               }`}
             >
               <ShieldAlert className={`w-4 h-4 ${activeRole === 'admin' ? 'text-white' : 'text-red-400'}`} />
               <div className="text-left">
                 <div className="leading-tight flex items-center gap-1.5">
                   <span>Administration Panel</span>
-                  <span className="text-[9px] font-mono px-1 py-0.2 bg-red-950 text-red-300 rounded border border-red-800">
+                  <span className="text-[9px] font-mono px-1 py-0.2 bg-red-950 text-red-300 rounded border border-red-700">
                     Restricted
                   </span>
                 </div>
-                <div className={`text-[10px] ${activeRole === 'admin' ? 'text-red-100 font-medium' : 'text-neutral-400'}`}>
+                <div className={`text-[10px] ${activeRole === 'admin' ? 'text-red-100 font-medium' : 'text-sky-200'}`}>
                   Fleet, KYC, APIs &amp; DevOps
                 </div>
               </div>
@@ -496,7 +496,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           {/* Role Status Pill */}
-          <div className="flex items-center gap-2 text-xs shrink-0 bg-neutral-900 border border-neutral-800 px-3 py-1.5 rounded-xl">
+          <div className="flex items-center gap-2 text-xs shrink-0 bg-sky-950/80 border border-sky-600 px-3 py-1.5 rounded-xl shadow-sm text-sky-100">
             {activeRole === 'customer' && (
               <div className="flex items-center gap-2 text-neutral-300">
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />

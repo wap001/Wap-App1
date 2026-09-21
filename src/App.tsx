@@ -362,11 +362,11 @@ export default function App() {
       )}
 
       {/* Mobile Frame Mode Toggle & Direct Role Navigation Sub-Bar */}
-      <div className="bg-neutral-900/90 border-b border-neutral-800 px-4 py-2">
+      <div className="bg-sky-50 border-b border-sky-200 px-4 py-2">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-amber-400">Unified Mobile App:</span>
-            <span className="text-neutral-400 hidden sm:inline">
+            <span className="font-bold text-sky-900">Unified Mobile App:</span>
+            <span className="text-slate-600 hidden sm:inline">
               Role-specific pages for Customers, Drivers &amp; Merchants with in-app task &amp; account management
             </span>
           </div>
@@ -377,8 +377,8 @@ export default function App() {
               onClick={() => setIsMobileFrameMode(!isMobileFrameMode)}
               className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition border cursor-pointer ${
                 isMobileFrameMode
-                  ? 'bg-amber-400 text-neutral-950 border-amber-300 shadow'
-                  : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:border-neutral-700'
+                  ? 'bg-sky-700 text-white border-sky-800 shadow-sm'
+                  : 'bg-white text-slate-800 border-sky-300 hover:bg-sky-100/60 shadow-sm'
               }`}
               title="Toggle between full viewport and mobile phone simulator"
             >
@@ -389,7 +389,7 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                  <Smartphone className="w-3.5 h-3.5 text-sky-600" />
                   <span>Mobile Device Frame</span>
                 </>
               )}
@@ -525,29 +525,29 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="bg-neutral-900 border-t border-neutral-800/80 py-4 text-xs text-neutral-400">
+      <footer className="bg-slate-900 border-t border-sky-800/60 py-4 text-xs text-slate-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Bike className="w-4 h-4 text-amber-400" />
-            <span className="font-semibold text-white">Wap Architecture Suite</span>
-            <span>• On-Demand Motorcycle Rides & Deliveries for Caribbean Immigrant Communities</span>
+            <span className="font-bold text-white">Wap Architecture Suite</span>
+            <span className="text-slate-400">• On-Demand Motorcycle Rides &amp; Deliveries for Caribbean Immigrant Communities</span>
           </div>
-          <div className="flex items-center gap-4 text-neutral-500">
+          <div className="flex items-center gap-4 text-slate-300 font-medium">
             <button
               onClick={() => setShowAboutUsModal(true)}
-              className="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 cursor-pointer"
+              className="text-sky-300 hover:text-white font-semibold underline underline-offset-2 cursor-pointer transition"
             >
               About Us &amp; Platform Charter
             </button>
             <button
               onClick={() => setShowDriverContractModal(true)}
-              className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 cursor-pointer"
+              className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 cursor-pointer transition"
             >
               Driver Legal Contracts
             </button>
             <button
               onClick={() => setShowEmergencyChatbotModal(true)}
-              className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2 cursor-pointer"
+              className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2 cursor-pointer transition"
             >
               Emergency Support Chat
             </button>

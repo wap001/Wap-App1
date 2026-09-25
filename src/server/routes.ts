@@ -849,19 +849,17 @@ router.get('/api/brokerage/trades/:userId', (req: Request, res: Response) => {
 
 /**
  * Row-Level Security Middleware for Administrative APIs
- * Enforces role-based isolation. Standard users, drivers, customers, and merchants
+ * Enforces strict email whitelisting against the database whitelist table.
+ * Standard users, drivers, customers, merchants, and unauthenticated visitors
  * are strictly forbidden and return an unauthorized error with audit logging.
  */
 function requireAdminAuth(req: Request, res: Response, next: () => void) {
-  const userRole = req.headers['x-user-role'] as string;
-  const userEmail = req.headers['x-user-email'] as string;
-  const authHeader = req.headers.authorization;
+  const userEmail = (req.headers['x-user-email'] as string) || (req.body?.adminEmail as string) || '';
 
-  const designatedAdminEmails = ['stangyneco@gmail.com', 'admin@wap-transport.ht'];
-  const isDesignatedAdminEmail = userEmail && designatedAdminEmails.includes(userEmail.toLowerCase());
-  const isAdminRole = userRole === 'admin' || (authHeader && authHeader.toLowerCase().includes('admin'));
+  // Real-time verification against the database whitelist table
+  const isWhitelisted = db.isEmailWhitelisted(userEmail);
 
-  if (isAdminRole || isDesignatedAdminEmail) {
+  if (isWhitelisted) {
     return next();
   }
 
@@ -871,21 +869,43 @@ function requireAdminAuth(req: Request, res: Response, next: () => void) {
     severity: 'warn',
     category: 'rbac',
     actorId: userEmail || 'anonymous_user',
-    actorRole: (userRole as any) || 'user',
+    actorRole: 'user',
     action: 'UNAUTHORIZED_ADMIN_API_BLOCKED',
-    details: `Blocked direct attempt to access administrative endpoint ${req.method} ${req.originalUrl}. Row-level security restriction applied.`,
+    details: `Blocked attempt to access administrative endpoint ${req.method} ${req.originalUrl}. Email '${userEmail || 'none'}' is not on the approved administrative whitelist.`,
     ipAddress: clientIp,
     status: 'blocked'
   });
 
   return res.status(403).json({
     success: false,
-    error: 'Unauthorized: Administrative access strictly restricted to designated platform administrators with active role-based clearance.',
-    code: 'INSUFFICIENT_ADMIN_PERMISSIONS',
-    enforcement: 'Row-Level Security (RLS) Policy',
+    error: 'Access Denied: Administrative access is strictly restricted to approved email addresses on the platform whitelist.',
+    code: 'EMAIL_NOT_WHITELISTED',
+    enforcement: 'Database Email Whitelist Policy',
     redirectTarget: '/?role=customer'
   });
 }
+
+/**
+ * Real-time public/auth check endpoint
+ * Verifies whether a login email address is on the administrative whitelist
+ */
+router.post('/api/auth/check-admin-email', (req: Request, res: Response) => {
+  const { email } = req.body;
+  if (!email || typeof email !== 'string') {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  const isWhitelisted = db.isEmailWhitelisted(email);
+  const isSuperAdmin = db.isSuperAdmin(email);
+
+  return res.json({
+    success: true,
+    email: email.trim().toLowerCase(),
+    isWhitelisted,
+    isSuperAdmin,
+    role: isWhitelisted ? 'admin' : 'customer'
+  });
+});
 
 /**
  * 8.1 Administrative Dashboard Overview Metrics

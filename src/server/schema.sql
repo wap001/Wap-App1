@@ -92,10 +92,27 @@ CREATE TABLE IF NOT EXISTS fee_configurations (
     updated_by VARCHAR(120) NOT NULL
 );
 
+-- 7. SECURE ADMINISTRATIVE EMAIL WHITELIST TABLE
+CREATE TABLE IF NOT EXISTS admin_email_whitelist (
+    email VARCHAR(160) PRIMARY KEY,
+    name VARCHAR(120) NOT NULL,
+    is_super_admin BOOLEAN NOT NULL DEFAULT FALSE,
+    added_by VARCHAR(120) NOT NULL,
+    added_at TIMESTAMPTZ DEFAULT NOW(),
+    notes TEXT
+);
+
+-- Seed designated administrators
+INSERT INTO admin_email_whitelist (email, name, is_super_admin, added_by, notes) VALUES
+('stangyneco@gmail.com', 'Stangy Neco', TRUE, 'System Root Bootstrap', 'Lead Platform Master Administrator'),
+('admin@wap-transport.ht', 'Wap Operations Admin', TRUE, 'System Root Bootstrap', 'Infrastructure & Emergency Operations Clearance')
+ON CONFLICT (email) DO NOTHING;
+
 -- ROW LEVEL SECURITY (RLS) POLICIES FOR SENSITIVE ADMINISTRATIVE DATA
 ALTER TABLE platform_audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE kyc_verifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fee_configurations ENABLE ROW LEVEL SECURITY;
+ALTER TABLE admin_email_whitelist ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Restrict read and write access on platform logs exclusively to users with 'admin' role
 CREATE POLICY admin_only_audit_logs ON platform_audit_logs
@@ -110,7 +127,11 @@ CREATE POLICY admin_only_fee_configs ON fee_configurations
     FOR ALL
     USING (CURRENT_USER = 'admin' OR current_setting('app.current_user_role', true) = 'admin');
 
--- 7. DRIVER PROFILES TABLE (With PostGIS Spatial Geography / Geometry Column)
+CREATE POLICY admin_only_whitelist ON admin_email_whitelist
+    FOR ALL
+    USING (CURRENT_USER = 'admin' OR current_setting('app.current_user_role', true) = 'admin');
+
+-- 8. DRIVER PROFILES TABLE (With PostGIS Spatial Geography / Geometry Column)
 CREATE TABLE IF NOT EXISTS driver_profiles (
     driver_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,

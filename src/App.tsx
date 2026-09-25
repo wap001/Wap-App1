@@ -355,6 +355,21 @@ export default function App() {
         onOpenEmergencyChatbot={() => setShowEmergencyChatbotModal(true)}
       />
 
+      {/* Route Protection Security Interception Banner */}
+      {routeProtectionToast && (
+        <div className="bg-red-600 text-white px-4 py-3 text-xs md:text-sm font-bold text-center sticky top-[72px] z-50 shadow-xl flex items-center justify-center gap-2 border-b border-red-400 animate-in fade-in">
+          <ShieldAlert className="w-5 h-5 shrink-0 animate-bounce" />
+          <span>{routeProtectionToast}</span>
+          <button
+            type="button"
+            onClick={() => setRouteProtectionToast(null)}
+            className="ml-3 underline cursor-pointer text-white/90 hover:text-white text-xs font-semibold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Authenticated User Profile Header & Identity Verification Status Widget */}
       {currentUser && (
         <div className="bg-neutral-900/95 border-b border-amber-500/25 px-4 py-3 text-xs text-neutral-300 shadow-lg">
@@ -527,13 +542,19 @@ export default function App() {
               />
             )}
 
-            {/* Role 4: Administration Panel (Restricted exclusively to this view) */}
+            {/* Role 4: Administration Panel (Restricted exclusively to authorized admin users) */}
             {activeRole === 'admin' && (
               <AdminPanelWorkspace
                 region={selectedRegion}
                 language={selectedLanguage}
                 onPlaySpeech={handlePlaySpeech}
                 initialSection={adminInitialSection}
+                currentUser={currentUser}
+                onRedirectToMap={() => {
+                  setActiveRole('customer');
+                  setActiveTab('customer');
+                  updateUrlForRole('customer');
+                }}
               />
             )}
           </>

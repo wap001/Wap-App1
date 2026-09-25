@@ -65,6 +65,41 @@ export interface KycSubmissionRecord {
   reviewerNotes?: string;
 }
 
+export type DriverVehicleCategory = 'two_wheels' | 'three_wheels' | 'four_wheels';
+
+export const MINIMUM_VEHICLE_MANUFACTURE_YEARS: Record<DriverVehicleCategory, number> = {
+  two_wheels: 2015,
+  four_wheels: 2015,
+  three_wheels: 2020
+};
+
+export function validateVehicleModelYear(category: DriverVehicleCategory, year: number): { valid: boolean; error?: string } {
+  const minYear = MINIMUM_VEHICLE_MANUFACTURE_YEARS[category];
+  if (!minYear) {
+    return { valid: false, error: 'Invalid vehicle category selected.' };
+  }
+  if (year < minYear) {
+    const categoryName = category === 'two_wheels' ? 'Two Wheels Motorcycle' : category === 'three_wheels' ? 'Three Wheels Motorcycle' : 'Four Wheels Car';
+    return {
+      valid: false,
+      error: `Vehicle Age Requirement Not Met: ${categoryName} must have a minimum manufacture year of ${minYear} or newer (selected: ${year}). Your vehicle does not meet the minimum platform age standards for safety and emissions.`
+    };
+  }
+  return { valid: true };
+}
+
+export interface DriverVehicleDetails {
+  category: DriverVehicleCategory;
+  categoryLabel: string;
+  make: string;
+  model: string;
+  manufactureYear: number;
+  licensePlate: string;
+  color: string;
+  registrationDocumentUrl?: string;
+  registrationDocumentName?: string;
+}
+
 export interface DriverCredentials {
   licenseNumber: string;
   vehicleType: '2_wheeler' | '3_wheeler' | '4_wheeler';
@@ -72,6 +107,7 @@ export interface DriverCredentials {
   isVerified: boolean;
   rating: number;
   tripsCompleted: number;
+  vehicleDetails?: DriverVehicleDetails;
 }
 
 export interface UserProfileRecord {
@@ -441,7 +477,17 @@ class DatabaseAdapter {
         vehiclePlate: 'TP-9821',
         isVerified: true,
         rating: 4.96,
-        tripsCompleted: 482
+        tripsCompleted: 482,
+        vehicleDetails: {
+          category: 'two_wheels',
+          categoryLabel: 'Two Wheels Motorcycle',
+          make: 'Haojue',
+          model: 'HJ125-8 Super Express',
+          manufactureYear: 2022,
+          licensePlate: 'TP-9821',
+          color: 'Crimson Red',
+          registrationDocumentName: 'haojue_carte_grise_2022.pdf'
+        }
       }
     },
     {
@@ -473,7 +519,17 @@ class DatabaseAdapter {
         vehiclePlate: 'TP-7712',
         isVerified: false,
         rating: 5.0,
-        tripsCompleted: 0
+        tripsCompleted: 0,
+        vehicleDetails: {
+          category: 'two_wheels',
+          categoryLabel: 'Two Wheels Motorcycle',
+          make: 'Haojue',
+          model: 'HJ110-2 Urban Cruiser',
+          manufactureYear: 2021,
+          licensePlate: 'TP-7712',
+          color: 'Midnight Black',
+          registrationDocumentName: 'registration_haojue_daphnee.pdf'
+        }
       },
       kycSubmissionId: 'sub-kyc-001'
     },
@@ -494,7 +550,17 @@ class DatabaseAdapter {
         vehiclePlate: 'TK-4410',
         isVerified: false,
         rating: 4.88,
-        tripsCompleted: 14
+        tripsCompleted: 14,
+        vehicleDetails: {
+          category: 'three_wheels',
+          categoryLabel: 'Three Wheels Motorcycle (Canopy Tuk-Tuk)',
+          make: 'Bajaj',
+          model: 'RE Compact 4S',
+          manufactureYear: 2023,
+          licensePlate: 'TK-4410',
+          color: 'Vibrant Yellow',
+          registrationDocumentName: 'bajaj_canopy_registration_2023.pdf'
+        }
       },
       kycSubmissionId: 'sub-kyc-002'
     },

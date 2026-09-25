@@ -1,0 +1,22 @@
+# Base44 development compose for the Wap Mobility platform.
+# Single-process dev server: Express 4 + Vite middleware + Socket.IO on port 3000.
+# The database adapter (src/server/db.ts) is an in-memory engine seeded from code,
+# so no PostgreSQL/PostGIS service is required to boot or develop the frontend.
+services:
+  app:
+    image: node:22-alpine
+    working_dir: /app
+    # Bind-mount the cloned source so edits are reflected live.
+    volumes:
+      - ./:/app
+      # Keep installed deps inside the container, isolated from the host bind mount.
+      - /app/node_modules
+    environment:
+      # Dev mode: server.ts uses Vite middleware (NODE_ENV !== 'production').
+      - NODE_ENV=development
+      # Vite >= 6.1 appends this to its allowedHosts so the preview origin is accepted.
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
+      - BASE44_PUBLIC_HOST_SUFFIX
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install --legacy-peer-deps && npx tsx server.ts"

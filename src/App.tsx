@@ -113,13 +113,29 @@ export default function App() {
   const [showAboutUsModal, setShowAboutUsModal] = useState<boolean>(false);
   const [showDriverContractModal, setShowDriverContractModal] = useState<boolean>(false);
   const [showEmergencyChatbotModal, setShowEmergencyChatbotModal] = useState<boolean>(false);
+  const [routeProtectionToast, setRouteProtectionToast] = useState<string | null>(null);
 
-  // Sync role and region from URL search params on mount
+  // Sync role and region from URL search params on mount with strict route protection
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const roleParam = params.get('role');
-      if (roleParam === 'customer' || roleParam === 'driver' || roleParam === 'merchant' || roleParam === 'admin') {
+      const tabParam = params.get('tab');
+
+      // Page Route Protection: Check if attempting to access administrative portal
+      const isAttemptingAdmin = roleParam === 'admin' || tabParam === 'admin' || activeRole === 'admin';
+      const hasAdminClearance = currentUser && currentUser.role === 'admin';
+
+      if (isAttemptingAdmin && !hasAdminClearance) {
+        // Automatically redirect unauthorized user back to main interactive map interface (Customer radar)
+        setActiveRole('customer');
+        setActiveTab('customer');
+        updateUrlForRole('customer');
+        setRouteProtectionToast(
+          'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators with RBAC Level 4 clearance. You have been redirected to the main interactive map interface.'
+        );
+        setTimeout(() => setRouteProtectionToast(null), 7000);
+      } else if (roleParam === 'customer' || roleParam === 'driver' || roleParam === 'merchant' || (roleParam === 'admin' && hasAdminClearance)) {
         setActiveRole(roleParam as ActiveRole);
         setActiveTab(roleParam as ActiveTabId);
       }
@@ -133,7 +149,7 @@ export default function App() {
     } catch {
       // safe fallback
     }
-  }, []);
+  }, [currentUser]);
 
   // Update URL search params when activeRole changes
   const updateUrlForRole = (role: ActiveRole) => {
@@ -208,8 +224,18 @@ export default function App() {
     }
   };
 
-  // Role switcher and legacy tab handler
+  // Role switcher and legacy tab handler with RBAC route protection
   const handleSelectRole = (role: ActiveRole) => {
+    if (role === 'admin' && (!currentUser || currentUser.role !== 'admin')) {
+      setActiveRole('customer');
+      setActiveTab('customer');
+      updateUrlForRole('customer');
+      setRouteProtectionToast(
+        'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators with RBAC Level 4 clearance. You have been redirected to the main interactive map interface.'
+      );
+      setTimeout(() => setRouteProtectionToast(null), 7000);
+      return;
+    }
     setActiveRole(role);
     setActiveTab(role);
     setIsWelcomeActive(false);
@@ -220,7 +246,6 @@ export default function App() {
   };
 
   const handleSelectTab = (tab: ActiveTabId) => {
-    setActiveTab(tab);
     setIsWelcomeActive(false);
     if (tab === 'customer' || tab === 'simulator') {
       setActiveRole('customer');
@@ -235,6 +260,16 @@ export default function App() {
       updateUrlForRole('merchant');
       setCurrentUser((prev) => (prev ? { ...prev, role: 'merchant' } : prev));
     } else {
+      if (!currentUser || currentUser.role !== 'admin') {
+        setActiveRole('customer');
+        setActiveTab('customer');
+        updateUrlForRole('customer');
+        setRouteProtectionToast(
+          'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators. You have been redirected to the main interactive map interface.'
+        );
+        setTimeout(() => setRouteProtectionToast(null), 7000);
+        return;
+      }
       setActiveRole('admin');
       updateUrlForRole('admin');
       if (tab === 'marketplace-lbc') setAdminInitialSection('marketplace-brokerage');
@@ -251,7 +286,7 @@ export default function App() {
       else if (tab === 'architecture' || tab === 'offline') setAdminInitialSection('architecture');
       else if (tab === 'database') setAdminInitialSection('database');
       else if (tab === 'maps') setAdminInitialSection('maps');
-      else setAdminInitialSection('operations');
+      else setAdminInitialSection('dashboard');
     }
   };
 

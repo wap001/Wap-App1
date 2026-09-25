@@ -34,16 +34,83 @@ CREATE TABLE IF NOT EXISTS regional_pricing (
 CREATE INDEX IF NOT EXISTS idx_regional_pricing_lookup 
 ON regional_pricing(region_id, vehicle_type);
 
--- 3. USERS TABLE (Riders, Drivers, Dispatchers)
+-- 3. USERS TABLE (Riders, Drivers, Merchants, Admins with Default Role Parameter)
 CREATE TABLE IF NOT EXISTS users (
     user_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     full_name VARCHAR(120) NOT NULL,
+    email VARCHAR(160) NOT NULL UNIQUE,
     phone_e164 VARCHAR(25) NOT NULL UNIQUE,
-    role VARCHAR(20) NOT NULL CHECK (role IN ('customer', 'driver', 'vendor', 'admin')),
+    -- Role database parameter: default registration is strictly standard 'user'
+    role VARCHAR(20) NOT NULL DEFAULT 'user' CHECK (role IN ('user', 'customer', 'driver', 'merchant', 'admin')),
+    account_status VARCHAR(25) NOT NULL DEFAULT 'active' CHECK (account_status IN ('active', 'pending_verification', 'suspended', 'restricted')),
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 4. DRIVER PROFILES TABLE (With PostGIS Spatial Geography / Geometry Column)
+-- 4. KYC & THREE-WAY PHOTO VERIFICATION SUBMISSIONS TABLE
+CREATE TABLE IF NOT EXISTS kyc_verifications (
+    submission_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    document_type VARCHAR(100) NOT NULL, -- 'Passport', 'National ID', 'Commercial License'
+    document_number VARCHAR(80) NOT NULL,
+    issuing_country VARCHAR(10) NOT NULL,
+    expiration_date DATE,
+    document_scan_url TEXT,
+    -- Mandatory 3-way photo verification URLs
+    front_id_photo_url TEXT NOT NULL,
+    profile_selfie_url TEXT NOT NULL,
+    landmark_vehicle_photo_url TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    reviewer_notes TEXT,
+    reviewed_by VARCHAR(120),
+    submitted_at TIMESTAMPTZ DEFAULT NOW(),
+    reviewed_at TIMESTAMPTZ
+);
+
+-- 5. SENSITIVE PLATFORM AUDIT & TRANSACTION LOGS
+CREATE TABLE IF NOT EXISTS platform_audit_logs (
+    log_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    timestamp TIMESTAMPTZ DEFAULT NOW(),
+    severity VARCHAR(15) NOT NULL CHECK (severity IN ('info', 'warn', 'critical')),
+    category VARCHAR(25) NOT NULL CHECK (category IN ('auth', 'kyc', 'financial', 'dispatch', 'fee_update', 'rbac')),
+    actor_id VARCHAR(80) NOT NULL,
+    actor_role VARCHAR(20) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    details TEXT NOT NULL,
+    ip_address VARCHAR(45) NOT NULL,
+    status VARCHAR(20) DEFAULT 'success'
+);
+
+-- 6. PLATFORM FEE & CONVERSION SPREAD CONFIGURATION TABLE
+CREATE TABLE IF NOT EXISTS fee_configurations (
+    config_id SERIAL PRIMARY KEY,
+    lbc_conversion_spread_percent NUMERIC(5, 2) NOT NULL DEFAULT 0.85,
+    fiat_cashout_fee_percent NUMERIC(5, 2) NOT NULL DEFAULT 0.50,
+    platform_commission_rate NUMERIC(5, 2) NOT NULL DEFAULT 15.00,
+    minimum_lbc_conversion INT NOT NULL DEFAULT 25,
+    treasury_apy_percent NUMERIC(5, 2) NOT NULL DEFAULT 5.20,
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_by VARCHAR(120) NOT NULL
+);
+
+-- ROW LEVEL SECURITY (RLS) POLICIES FOR SENSITIVE ADMINISTRATIVE DATA
+ALTER TABLE platform_audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE kyc_verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE fee_configurations ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Restrict read and write access on platform logs exclusively to users with 'admin' role
+CREATE POLICY admin_only_audit_logs ON platform_audit_logs
+    FOR ALL
+    USING (CURRENT_USER = 'admin' OR current_setting('app.current_user_role', true) = 'admin');
+
+CREATE POLICY admin_only_kyc ON kyc_verifications
+    FOR ALL
+    USING (CURRENT_USER = 'admin' OR current_setting('app.current_user_role', true) = 'admin');
+
+CREATE POLICY admin_only_fee_configs ON fee_configurations
+    FOR ALL
+    USING (CURRENT_USER = 'admin' OR current_setting('app.current_user_role', true) = 'admin');
+
+-- 7. DRIVER PROFILES TABLE (With PostGIS Spatial Geography / Geometry Column)
 CREATE TABLE IF NOT EXISTS driver_profiles (
     driver_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,

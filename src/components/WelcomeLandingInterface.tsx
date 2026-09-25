@@ -65,6 +65,7 @@ export interface AuthUserData {
   verificationProgress: number;
   verificationNotes?: string;
   passportDocument?: PassportDocumentInfo;
+  accountStatus?: 'active' | 'pending_verification' | 'suspended' | 'restricted';
 }
 
 interface WelcomeLandingInterfaceProps {
@@ -337,24 +338,25 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
     setTimeout(() => {
       setIsSubmitting(false);
 
-      // Determine user name and details based on role/email
+      // Determine user name and details based on role/email with strict RBAC isolation
       let displayName = 'Valued User';
-      let userRole: ActiveRole = targetRole;
+      let userRole: ActiveRole = targetRole === 'admin' ? 'customer' : targetRole;
+      const normalizedEmail = loginEmail.trim().toLowerCase();
+      const designatedAdminEmails = ['stangyneco@gmail.com', 'admin@wap-transport.ht'];
+      const isDesignatedAdmin = designatedAdminEmails.includes(normalizedEmail);
 
-      if (loginEmail.toLowerCase().includes('driver') || targetRole === 'driver') {
+      if (isDesignatedAdmin) {
+        displayName = normalizedEmail === 'stangyneco@gmail.com' ? 'Stangy Neco (Platform Administrator)' : 'Wap Operations Admin';
+        userRole = 'admin';
+      } else if (normalizedEmail.includes('driver') || targetRole === 'driver') {
         displayName = 'Moïse Baptiste';
         userRole = 'driver';
-      } else if (loginEmail.toLowerCase().includes('merchant') || loginEmail.toLowerCase().includes('resto') || targetRole === 'merchant') {
+      } else if (normalizedEmail.includes('merchant') || normalizedEmail.includes('resto') || targetRole === 'merchant') {
         displayName = 'Chef Fifi (Saveur Lakay)';
         userRole = 'merchant';
-      } else if (loginEmail.toLowerCase().includes('admin')) {
-        displayName = 'Operations Admin';
-        userRole = 'admin';
-      } else if (loginEmail.toLowerCase() === 'stangyneco@gmail.com') {
-        displayName = 'Stangy Neco';
-        userRole = targetRole;
       } else {
         displayName = loginEmail.split('@')[0].replace(/[._]/g, ' ');
+        userRole = targetRole === 'admin' ? 'customer' : targetRole;
       }
 
       const authenticatedUser: AuthUserData = {
@@ -510,12 +512,17 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
         expirationDate: passportExpiry || '2031-12-31',
       };
 
+      // Enforce default user role parameter attached to user profiles with default registration set to standard role
+      // Reserving the admin role strictly for designated administrators.
+      const assignedRole: ActiveRole = targetRole === 'admin' ? 'customer' : targetRole;
+
       const newUser: AuthUserData = {
         id: 'usr_' + Math.random().toString(36).substring(2, 9),
         name: signupName.trim(),
         email: signupEmail.trim(),
         phone: `${signupCountryCode} ${signupPhone.trim()}`,
-        role: targetRole,
+        role: assignedRole,
+        accountStatus: 'pending_verification',
         region: currentRegion,
         subscriptionTier: plan.id,
         subscriptionName: plan.name,
@@ -714,14 +721,14 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
             <div className="text-[11px] font-bold text-neutral-400 uppercase tracking-wider">
               Instant One-Click Demo Access:
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 id="demo-login-customer"
                 type="button"
-                onClick={() => handleQuickDemoLogin('customer', 'stangyneco@gmail.com', 'Stangy Neco', 'customer_pass')}
+                onClick={() => handleQuickDemoLogin('customer', 'jeanluc.dessalines@wap-transport.ht', 'Jean-Luc Dessalines', 'customer_pass')}
                 className="py-1.5 px-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-semibold border border-neutral-700 transition text-center cursor-pointer"
               >
-                Passenger
+                Passenger (Standard)
               </button>
               <button
                 id="demo-login-driver"
@@ -729,7 +736,7 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
                 onClick={() => handleQuickDemoLogin('driver', 'moise.driver@wap.ht', 'Moïse Baptiste', 'driver_pro')}
                 className="py-1.5 px-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-semibold border border-neutral-700 transition text-center cursor-pointer"
               >
-                Driver
+                Driver (Standard)
               </button>
               <button
                 id="demo-login-merchant"
@@ -737,7 +744,15 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
                 onClick={() => handleQuickDemoLogin('merchant', 'cheffifi@wap.ht', 'Chef Fifi', 'merchant_verified')}
                 className="py-1.5 px-2 rounded-lg bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-[11px] font-semibold border border-neutral-700 transition text-center cursor-pointer"
               >
-                Merchant
+                Merchant (Standard)
+              </button>
+              <button
+                id="demo-login-admin"
+                type="button"
+                onClick={() => handleQuickDemoLogin('admin', 'stangyneco@gmail.com', 'Stangy Neco (Admin)', 'admin_clearance')}
+                className="py-1.5 px-2 rounded-lg bg-red-950/80 hover:bg-red-900 text-red-200 text-[11px] font-bold border border-red-700/80 transition text-center cursor-pointer shadow-sm"
+              >
+                Designated Admin
               </button>
             </div>
           </div>

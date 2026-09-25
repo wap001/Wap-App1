@@ -466,33 +466,36 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 4. Administration Panel Role */}
-            <button
-              id="role-tab-admin"
-              type="button"
-              onClick={() => {
-                onSelectRole('admin');
-                if (onSelectTab) onSelectTab('admin');
-              }}
-              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 ${
-                !isWelcomeActive && activeRole === 'admin'
-                  ? 'bg-red-600 text-white shadow-md font-bold ring-2 ring-red-400'
-                  : 'bg-sky-950/70 border border-sky-600/70 text-sky-100 hover:text-white hover:bg-sky-900/80 hover:border-sky-500'
-              }`}
-            >
-              <ShieldAlert className={`w-4 h-4 ${activeRole === 'admin' ? 'text-white' : 'text-red-400'}`} />
-              <div className="text-left">
-                <div className="leading-tight flex items-center gap-1.5">
-                  <span>Administration Panel</span>
-                  <span className="text-[9px] font-mono px-1 py-0.2 bg-red-950 text-red-300 rounded border border-red-700">
-                    Restricted
-                  </span>
+            {/* 4. Hidden Administrative Portal Role (Renders exclusively for authenticated admin users) */}
+            {currentUser && currentUser.role === 'admin' && (
+              <button
+                id="role-tab-admin"
+                type="button"
+                onClick={() => {
+                  onSelectRole('admin');
+                  if (onSelectTab) onSelectTab('admin');
+                }}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shrink-0 border ${
+                  !isWelcomeActive && activeRole === 'admin'
+                    ? 'bg-red-600 text-white border-red-500 shadow-md font-bold ring-2 ring-red-400'
+                    : 'bg-red-950/60 border-red-700/80 text-red-200 hover:text-white hover:bg-red-900/80'
+                }`}
+                title="Hidden Administrative Control Panel - Authorized Admins Only"
+              >
+                <ShieldAlert className={`w-4 h-4 ${activeRole === 'admin' ? 'text-white' : 'text-red-400 animate-pulse'}`} />
+                <div className="text-left">
+                  <div className="leading-tight flex items-center gap-1.5">
+                    <span>Admin Portal</span>
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 bg-red-900 text-red-200 rounded font-black border border-red-600">
+                      Clearance Active
+                    </span>
+                  </div>
+                  <div className={`text-[10px] ${activeRole === 'admin' ? 'text-red-100 font-medium' : 'text-red-300/80'}`}>
+                    KYC, Fleet, Logs &amp; Fees
+                  </div>
                 </div>
-                <div className={`text-[10px] ${activeRole === 'admin' ? 'text-red-100 font-medium' : 'text-sky-200'}`}>
-                  Fleet, KYC, APIs &amp; DevOps
-                </div>
-              </div>
-            </button>
+              </button>
+            )}
           </div>
 
           {/* Role Status Pill */}

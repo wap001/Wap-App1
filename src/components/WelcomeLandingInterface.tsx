@@ -36,6 +36,10 @@ import { RegionId, LanguageCode } from '../types/architecture';
 import { REGIONS } from '../data/mockData';
 import { ActiveRole } from './Header';
 import { WapLogo } from './WapLogo';
+import {
+  verifyEmailAgainstAdminWhitelist,
+  isEmailAdminWhitelistedSync
+} from '../utils/adminWhitelist';
 
 export type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
@@ -318,8 +322,8 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       ? driverPlans
       : merchantPlans;
 
-  // Handle Login submission
-  const handleLoginSubmit = (e: React.FormEvent) => {
+  // Handle Login submission with real-time administrator email whitelist check
+  const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoginError(null);
 
@@ -335,18 +339,20 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-
-      // Determine user name and details based on role/email with strict RBAC isolation
-      let displayName = 'Valued User';
-      let userRole: ActiveRole = targetRole === 'admin' ? 'customer' : targetRole;
+    try {
       const normalizedEmail = loginEmail.trim().toLowerCase();
-      const designatedAdminEmails = ['stangyneco@gmail.com', 'admin@wap-transport.ht'];
-      const isDesignatedAdmin = designatedAdminEmails.includes(normalizedEmail);
 
-      if (isDesignatedAdmin) {
-        displayName = normalizedEmail === 'stangyneco@gmail.com' ? 'Stangy Neco (Platform Administrator)' : 'Wap Operations Admin';
+      // Real-time verification: check verified login email against administrative whitelist
+      const whitelistCheck = await verifyEmailAgainstAdminWhitelist(normalizedEmail);
+      const isWhitelisted = whitelistCheck.isWhitelisted;
+
+      // Determine user name and details based on role/email with strict RBAC whitelist enforcement
+      let displayName = 'Valued User';
+      let userRole: ActiveRole = 'customer';
+
+      if (isWhitelisted) {
+        // Automatically grant administrative privileges if email exists on whitelist
+        displayName = whitelistCheck.adminDetails?.name || (normalizedEmail === 'stangyneco@gmail.com' ? 'Stangy Neco (Master Super-Admin)' : 'Platform Administrator');
         userRole = 'admin';
       } else if (normalizedEmail.includes('driver') || targetRole === 'driver') {
         displayName = 'Moïse Baptiste';
@@ -366,13 +372,15 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
         phone: signupCountryCode + ' 4822-1092',
         role: userRole,
         region: currentRegion,
-        subscriptionTier: 'customer_pass',
-        subscriptionName: 'Wap Plus Freedom Pass',
-        lbcBonus: 2850,
+        subscriptionTier: isWhitelisted ? 'admin_clearance' : 'customer_pass',
+        subscriptionName: isWhitelisted ? 'Level 4 Administrator Clearance' : 'Wap Plus Freedom Pass',
+        lbcBonus: isWhitelisted ? 50000 : 2850,
         signedUpAt: new Date().toISOString(),
         verificationStatus: 'approved',
         verificationProgress: 100,
-        verificationNotes: 'Official passport verified with biometric validation and CARICOM regional registry.',
+        verificationNotes: isWhitelisted
+          ? 'Identity document & verified email validated against platform administrator whitelist.'
+          : 'Official passport verified with biometric validation and CARICOM regional registry.',
         passportDocument: {
           fileName: 'official_biometric_passport.pdf',
           fileSize: '1.9 MB',
@@ -400,7 +408,11 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
       }
 
       onLoginSuccess(authenticatedUser);
-    }, 600);
+    } catch {
+      setLoginError('Authentication service temporarily unavailable. Please retry.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Helper to attach sample validated passport with 1 click
@@ -498,74 +510,93 @@ export const WelcomeLandingInterface: React.FC<WelcomeLandingInterfaceProps> = (
 
     const plan = currentPlans.find((p) => p.id === selectedPlanId) || currentPlans[0];
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    // Real-time verification of signup email against administrator whitelist
+    const normalizedSignupEmail = signupEmail.trim().toLowerCase();
+    verifyEmailAgainstAdminWhitelist(normalizedSignupEmail)
+      .then((checkResult) => {
+        setIsSubmitting(false);
 
-      const finalPassportDoc: PassportDocumentInfo = {
-        fileName: passportFile ? passportFile.name : (passportDocData?.fileName || 'official_passport.pdf'),
-        fileSize: passportFile ? `${(passportFile.size / 1024).toFixed(1)} KB` : (passportDocData?.fileSize || '1.8 MB'),
-        fileType: passportFile?.type || (passportDocData?.fileType || 'application/pdf'),
-        dataUrl: passportPreviewUrl || undefined,
-        uploadedAt: new Date().toISOString(),
-        passportNumber: passportNumber.trim().toUpperCase(),
-        issuingCountry: passportCountry,
-        expirationDate: passportExpiry || '2031-12-31',
-      };
+        const finalPassportDoc: PassportDocumentInfo = {
+          fileName: passportFile ? passportFile.name : (passportDocData?.fileName || 'official_passport.pdf'),
+          fileSize: passportFile ? `${(passportFile.size / 1024).toFixed(1)} KB` : (passportDocData?.fileSize || '1.8 MB'),
+          fileType: passportFile?.type || (passportDocData?.fileType || 'application/pdf'),
+          dataUrl: passportPreviewUrl || undefined,
+          uploadedAt: new Date().toISOString(),
+          passportNumber: passportNumber.trim().toUpperCase(),
+          issuingCountry: passportCountry,
+          expirationDate: passportExpiry || '2031-12-31',
+        };
 
-      // Enforce default user role parameter attached to user profiles with default registration set to standard role
-      // Reserving the admin role strictly for designated administrators.
-      const assignedRole: ActiveRole = targetRole === 'admin' ? 'customer' : targetRole;
+        // Enforce role parameter attached to user profiles with default registration set to user/standard role
+        // Reserving the admin role strictly for verified email whitelist matches.
+        const assignedRole: ActiveRole = checkResult.isWhitelisted
+          ? 'admin'
+          : targetRole === 'admin'
+          ? 'customer'
+          : targetRole;
 
-      const newUser: AuthUserData = {
-        id: 'usr_' + Math.random().toString(36).substring(2, 9),
-        name: signupName.trim(),
-        email: signupEmail.trim(),
-        phone: `${signupCountryCode} ${signupPhone.trim()}`,
-        role: assignedRole,
-        accountStatus: 'pending_verification',
-        region: currentRegion,
-        subscriptionTier: plan.id,
-        subscriptionName: plan.name,
-        lbcBonus: plan.lbcBonus + (promoCode.trim().toUpperCase() === 'LIBERTE2026' ? 100 : 0),
-        signedUpAt: new Date().toISOString(),
-        verificationStatus: 'pending',
-        verificationProgress: 65,
-        verificationNotes: 'Passport submitted during registration. In queue for machine-readable zone (MRZ) validation.',
-        passportDocument: finalPassportDoc,
-      };
+        const newUser: AuthUserData = {
+          id: 'usr_' + Math.random().toString(36).substring(2, 9),
+          name: signupName.trim(),
+          email: signupEmail.trim(),
+          phone: `${signupCountryCode} ${signupPhone.trim()}`,
+          role: assignedRole,
+          accountStatus: checkResult.isWhitelisted ? 'active' : 'pending_verification',
+          region: currentRegion,
+          subscriptionTier: checkResult.isWhitelisted ? 'admin_clearance' : plan.id,
+          subscriptionName: checkResult.isWhitelisted ? 'Level 4 Administrator Clearance' : plan.name,
+          lbcBonus: plan.lbcBonus + (promoCode.trim().toUpperCase() === 'LIBERTE2026' ? 100 : 0),
+          signedUpAt: new Date().toISOString(),
+          verificationStatus: checkResult.isWhitelisted ? 'approved' : 'pending',
+          verificationProgress: checkResult.isWhitelisted ? 100 : 65,
+          verificationNotes: checkResult.isWhitelisted
+            ? 'Administrator clearance automatically provisioned via active email whitelist verification.'
+            : 'Passport submitted during registration. In queue for machine-readable zone (MRZ) validation.',
+          passportDocument: finalPassportDoc,
+        };
 
-      try {
-        localStorage.setItem('wap_auth_user', JSON.stringify(newUser));
-      } catch {
-        // safe fallback
-      }
+        try {
+          localStorage.setItem('wap_auth_user', JSON.stringify(newUser));
+        } catch {
+          // safe fallback
+        }
 
-      onLoginSuccess(newUser);
-    }, 700);
+        onLoginSuccess(newUser);
+      })
+      .catch(() => {
+        setIsSubmitting(false);
+        setSignupError('Registration service temporarily unavailable. Please retry.');
+      });
   };
 
-  // Quick Demo Logins
-  const handleQuickDemoLogin = (role: ActiveRole, email: string, name: string, plan: string) => {
+  // Quick Demo Logins with Whitelist Check
+  const handleQuickDemoLogin = async (role: ActiveRole, email: string, name: string, plan: string) => {
+    const normalized = email.trim().toLowerCase();
+    const checkResult = await verifyEmailAgainstAdminWhitelist(normalized);
+    const assignedRole: ActiveRole = role === 'admin' && checkResult.isWhitelisted ? 'admin' : role === 'admin' ? 'customer' : role;
+
     const demoUser: AuthUserData = {
-      id: 'demo_' + role,
-      name,
+      id: 'demo_' + assignedRole,
+      name: checkResult.isWhitelisted && role === 'admin' ? 'Stangy Neco (Master Super-Admin)' : name,
       email,
       phone: '+509 4822-1092',
-      role,
+      role: assignedRole,
       region: currentRegion,
-      subscriptionTier: plan,
-      subscriptionName: plan === 'driver_pro' ? 'Pro Fleet Freedom Member' : plan === 'merchant_verified' ? 'Verified Enterprise Partner' : 'Wap Plus Freedom Pass',
-      lbcBonus: 2850,
+      subscriptionTier: assignedRole === 'admin' ? 'admin_clearance' : plan,
+      subscriptionName: assignedRole === 'admin' ? 'Level 4 Administrator Clearance' : plan === 'driver_pro' ? 'Pro Fleet Freedom Member' : plan === 'merchant_verified' ? 'Verified Enterprise Partner' : 'Wap Plus Freedom Pass',
+      lbcBonus: assignedRole === 'admin' ? 50000 : 2850,
       signedUpAt: new Date().toISOString(),
       verificationStatus: 'approved',
       verificationProgress: 100,
-      verificationNotes: 'Official passport verified with biometric validation and CARICOM regional registry.',
+      verificationNotes: assignedRole === 'admin'
+        ? 'Verified against administrator email whitelist table.'
+        : 'Official passport verified with biometric validation and CARICOM regional registry.',
       passportDocument: {
-        fileName: `${role}_official_passport.pdf`,
+        fileName: `${assignedRole}_official_passport.pdf`,
         fileSize: '2.1 MB',
         fileType: 'application/pdf',
         uploadedAt: '2026-03-01T09:00:00.000Z',
-        passportNumber: role === 'driver' ? 'P84920194' : role === 'merchant' ? 'P92038192' : 'P71928301',
+        passportNumber: assignedRole === 'driver' ? 'P84920194' : assignedRole === 'merchant' ? 'P92038192' : 'P71928301',
         issuingCountry:
           currentRegion === 'haiti'
             ? 'Haiti (HT)'

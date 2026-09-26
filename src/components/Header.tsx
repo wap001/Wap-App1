@@ -41,6 +41,7 @@ import { BrokerageIntegrationOverlay } from './BrokerageIntegrationOverlay';
 import { AuthUserData } from './WelcomeLandingInterface';
 import { IdentityVerificationStatusWidget } from './IdentityVerificationStatusWidget';
 import { WapLogo } from './WapLogo';
+import { isEmailAdminWhitelistedSync } from '../utils/adminWhitelist';
 
 export type ActiveRole = 'customer' | 'driver' | 'merchant' | 'admin';
 
@@ -466,8 +467,8 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </button>
 
-            {/* 4. Hidden Administrative Portal Role (Renders exclusively for authenticated admin users) */}
-            {currentUser && currentUser.role === 'admin' && (
+            {/* 4. Hidden Administrative Portal Role (Renders exclusively for authenticated admin users with whitelisted email) */}
+            {currentUser && currentUser.role === 'admin' && isEmailAdminWhitelistedSync(currentUser.email) && (
               <button
                 id="role-tab-admin"
                 type="button"

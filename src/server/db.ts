@@ -5,6 +5,12 @@
  * in-memory PostGIS-compatible spatial engine when running standalone.
  */
 
+import {
+  AdminWhitelistRecord,
+  INITIAL_ADMIN_WHITELIST_CONFIG,
+  normalizeAdminEmail
+} from './adminWhitelistConfig';
+
 export interface PricingRule {
   region_id: string;
   vehicle_type: string;
@@ -65,41 +71,6 @@ export interface KycSubmissionRecord {
   reviewerNotes?: string;
 }
 
-export type DriverVehicleCategory = 'two_wheels' | 'three_wheels' | 'four_wheels';
-
-export const MINIMUM_VEHICLE_MANUFACTURE_YEARS: Record<DriverVehicleCategory, number> = {
-  two_wheels: 2015,
-  four_wheels: 2015,
-  three_wheels: 2020
-};
-
-export function validateVehicleModelYear(category: DriverVehicleCategory, year: number): { valid: boolean; error?: string } {
-  const minYear = MINIMUM_VEHICLE_MANUFACTURE_YEARS[category];
-  if (!minYear) {
-    return { valid: false, error: 'Invalid vehicle category selected.' };
-  }
-  if (year < minYear) {
-    const categoryName = category === 'two_wheels' ? 'Two Wheels Motorcycle' : category === 'three_wheels' ? 'Three Wheels Motorcycle' : 'Four Wheels Car';
-    return {
-      valid: false,
-      error: `Vehicle Age Requirement Not Met: ${categoryName} must have a minimum manufacture year of ${minYear} or newer (selected: ${year}). Your vehicle does not meet the minimum platform age standards for safety and emissions.`
-    };
-  }
-  return { valid: true };
-}
-
-export interface DriverVehicleDetails {
-  category: DriverVehicleCategory;
-  categoryLabel: string;
-  make: string;
-  model: string;
-  manufactureYear: number;
-  licensePlate: string;
-  color: string;
-  registrationDocumentUrl?: string;
-  registrationDocumentName?: string;
-}
-
 export interface DriverCredentials {
   licenseNumber: string;
   vehicleType: '2_wheeler' | '3_wheeler' | '4_wheeler';
@@ -107,7 +78,6 @@ export interface DriverCredentials {
   isVerified: boolean;
   rating: number;
   tripsCompleted: number;
-  vehicleDetails?: DriverVehicleDetails;
 }
 
 export interface UserProfileRecord {
@@ -477,17 +447,7 @@ class DatabaseAdapter {
         vehiclePlate: 'TP-9821',
         isVerified: true,
         rating: 4.96,
-        tripsCompleted: 482,
-        vehicleDetails: {
-          category: 'two_wheels',
-          categoryLabel: 'Two Wheels Motorcycle',
-          make: 'Haojue',
-          model: 'HJ125-8 Super Express',
-          manufactureYear: 2022,
-          licensePlate: 'TP-9821',
-          color: 'Crimson Red',
-          registrationDocumentName: 'haojue_carte_grise_2022.pdf'
-        }
+        tripsCompleted: 482
       }
     },
     {
@@ -519,17 +479,7 @@ class DatabaseAdapter {
         vehiclePlate: 'TP-7712',
         isVerified: false,
         rating: 5.0,
-        tripsCompleted: 0,
-        vehicleDetails: {
-          category: 'two_wheels',
-          categoryLabel: 'Two Wheels Motorcycle',
-          make: 'Haojue',
-          model: 'HJ110-2 Urban Cruiser',
-          manufactureYear: 2021,
-          licensePlate: 'TP-7712',
-          color: 'Midnight Black',
-          registrationDocumentName: 'registration_haojue_daphnee.pdf'
-        }
+        tripsCompleted: 0
       },
       kycSubmissionId: 'sub-kyc-001'
     },
@@ -550,17 +500,7 @@ class DatabaseAdapter {
         vehiclePlate: 'TK-4410',
         isVerified: false,
         rating: 4.88,
-        tripsCompleted: 14,
-        vehicleDetails: {
-          category: 'three_wheels',
-          categoryLabel: 'Three Wheels Motorcycle (Canopy Tuk-Tuk)',
-          make: 'Bajaj',
-          model: 'RE Compact 4S',
-          manufactureYear: 2023,
-          licensePlate: 'TK-4410',
-          color: 'Vibrant Yellow',
-          registrationDocumentName: 'bajaj_canopy_registration_2023.pdf'
-        }
+        tripsCompleted: 14
       },
       kycSubmissionId: 'sub-kyc-002'
     },
@@ -916,6 +856,171 @@ class DatabaseAdapter {
       status: 'success'
     });
     return this.feeConfig;
+  }
+
+  // =========================================================================
+  // MASTER ADMINISTRATOR EMAIL WHITELIST DATABASE METHODS
+  // =========================================================================
+  private adminWhitelist: AdminWhitelistRecord[] = [...INITIAL_ADMIN_WHITELIST_CONFIG];
+
+  /**
+   * Real-time verification: checks if verified email exists in active whitelist
+   */
+  isEmailWhitelisted(email?: string | null): boolean {
+    if (!email) return false;
+    const normalized = normalizeAdminEmail(email);
+    const entry = this.adminWhitelist.find(
+      (w) => normalizeAdminEmail(w.email) === normalized && w.status === 'active'
+    );
+    return Boolean(entry);
+  }
+
+  /**
+   * Retrieves all administrator whitelist records
+   */
+  getAdminWhitelist(): AdminWhitelistRecord[] {
+    return [...this.adminWhitelist];
+  }
+
+  /**
+   * Retrieves a single whitelist entry by email address
+   */
+  getWhitelistEntryByEmail(email: string): AdminWhitelistRecord | null {
+    const normalized = normalizeAdminEmail(email);
+    return this.adminWhitelist.find((w) => normalizeAdminEmail(w.email) === normalized) || null;
+  }
+
+  /**
+   * Adds a new approved email address to the database whitelist
+   */
+  addAdminWhitelistEntry(
+    entry: {
+      email: string;
+      name: string;
+      role?: 'super_admin' | 'admin';
+      notes?: string;
+    },
+    addedBy: string
+  ): { success: boolean; entry?: AdminWhitelistRecord; error?: string } {
+    const normalized = normalizeAdminEmail(entry.email);
+    if (!normalized || !normalized.includes('@')) {
+      return { success: false, error: 'A valid email address is required.' };
+    }
+
+    const existingIndex = this.adminWhitelist.findIndex(
+      (w) => normalizeAdminEmail(w.email) === normalized
+    );
+
+    if (existingIndex >= 0) {
+      const existing = this.adminWhitelist[existingIndex];
+      if (existing.status === 'active') {
+        return { success: false, error: `Email address ${normalized} is already active on the administrator whitelist.` };
+      }
+      // Re-activate if previously revoked
+      existing.status = 'active';
+      existing.notes = entry.notes || existing.notes;
+      existing.addedBy = addedBy;
+      existing.addedAt = new Date().toISOString();
+
+      // Immediately upgrade user role in database if profile exists
+      const existingUser = this.users.find((u) => normalizeAdminEmail(u.email) === normalized);
+      if (existingUser) {
+        existingUser.role = 'admin';
+      }
+
+      this.addPlatformLog({
+        severity: 'info',
+        category: 'rbac',
+        actorId: addedBy,
+        actorRole: 'admin',
+        action: 'ADMIN_WHITELIST_REACTIVATED',
+        details: `Re-activated ${normalized} on administrative whitelist by ${addedBy}.`,
+        ipAddress: '127.0.0.1',
+        status: 'success'
+      });
+
+      return { success: true, entry: existing };
+    }
+
+    const newRecord: AdminWhitelistRecord = {
+      id: `whitelist-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      email: normalized,
+      name: entry.name.trim() || normalized.split('@')[0],
+      role: entry.role || 'admin',
+      status: 'active',
+      addedAt: new Date().toISOString(),
+      addedBy,
+      notes: entry.notes || 'Added by platform administrator.',
+      isProtected: false
+    };
+
+    this.adminWhitelist.push(newRecord);
+
+    // Immediately grant admin role to existing user account if present
+    const matchedUser = this.users.find((u) => normalizeAdminEmail(u.email) === normalized);
+    if (matchedUser) {
+      matchedUser.role = 'admin';
+    }
+
+    this.addPlatformLog({
+      severity: 'info',
+      category: 'rbac',
+      actorId: addedBy,
+      actorRole: 'admin',
+      action: 'ADMIN_WHITELIST_ADDED',
+      details: `Added new administrator email ${normalized} (${newRecord.name}) to whitelist by ${addedBy}.`,
+      ipAddress: '127.0.0.1',
+      status: 'success'
+    });
+
+    return { success: true, entry: newRecord };
+  }
+
+  /**
+   * Removes or revokes an email address from the whitelist
+   */
+  removeAdminWhitelistEntry(
+    idOrEmail: string,
+    requestedBy: string
+  ): { success: boolean; error?: string; removedEntry?: AdminWhitelistRecord } {
+    const normalized = normalizeAdminEmail(idOrEmail);
+    const entry = this.adminWhitelist.find(
+      (w) => w.id === idOrEmail || normalizeAdminEmail(w.email) === normalized
+    );
+
+    if (!entry) {
+      return { success: false, error: 'Administrator whitelist entry not found.' };
+    }
+
+    // Protection rule: Never allow removing the primary root super-admin (stangyneco@gmail.com)
+    if (entry.isProtected || normalizeAdminEmail(entry.email) === 'stangyneco@gmail.com') {
+      return {
+        success: false,
+        error: 'Security Constraint: Root Master Super-Administrator account is protected and cannot be deleted or revoked.'
+      };
+    }
+
+    // Remove from whitelist array
+    this.adminWhitelist = this.adminWhitelist.filter((w) => w.id !== entry.id);
+
+    // Immediately revoke admin role from user account in database
+    const affectedUser = this.users.find((u) => normalizeAdminEmail(u.email) === normalizeAdminEmail(entry.email));
+    if (affectedUser) {
+      affectedUser.role = 'user'; // Downscale to standard user
+    }
+
+    this.addPlatformLog({
+      severity: 'warn',
+      category: 'rbac',
+      actorId: requestedBy,
+      actorRole: 'admin',
+      action: 'ADMIN_WHITELIST_REMOVED',
+      details: `Removed ${entry.email} from administrator whitelist. Associated permissions immediately revoked by ${requestedBy}.`,
+      ipAddress: '127.0.0.1',
+      status: 'warning'
+    });
+
+    return { success: true, removedEntry: entry };
   }
 }
 

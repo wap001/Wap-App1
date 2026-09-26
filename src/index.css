@@ -2,29 +2,29 @@
 
 /* 
   Global Color Scheme Specification:
-  - Clean white background with crisp dark slate/black typography for maximum contrast & legibility.
-  - Strong dark sky blue header & brand elements (#0369a1 - #0284c7 - #0c4a6e).
-  - High-contrast map markers, badges, and overlays with clear dark or white fonts depending on background.
-  - Red Cancel / Emergency / Destructive actions styled in vibrant signal red (#dc2626 / #ef4444).
+  - White background with crisp dark slate/black typography for high contrast & clarity.
+  - Purple Navy title bar / brand header (#1e1b4b - #1e1338).
+  - Pop-up modals in ocean/deep blue container styling with elegant contrast.
+  - All Cancel / Emergency / Destructive actions styled in vibrant signal red (#dc2626 / #ef4444).
 */
 
 :root {
   --bg-primary: #ffffff;
   --bg-surface: #ffffff;
-  --bg-subtle: #f0f9ff;
+  --bg-subtle: #f8fafc;
   --text-main: #0f172a;
   --text-muted: #334155;
   --border-soft: #e2e8f0;
   
-  /* Strong Dark Sky Blue Title Bar */
-  --header-bg-from: #0369a1; /* rich sky/cerulean blue */
-  --header-bg-to: #0c4a6e;   /* deep oceanic sky blue */
+  /* Purple Navy Title Bar */
+  --header-bg-from: #1e1b4b; /* deep indigo purple navy */
+  --header-bg-to: #172554;   /* deep navy blue */
   
   /* Blue Popups */
-  --modal-bg: #0c4a6e;
-  --modal-border: #0284c7;
-  --modal-header-from: #0284c7;
-  --modal-header-to: #0369a1;
+  --modal-bg: #0f172a;
+  --modal-border: #1e3a8a;
+  --modal-header-from: #1e3a8a;
+  --modal-header-to: #1d4ed8;
 
   /* Red Cancel / Destructive */
   --danger-red: #dc2626;
@@ -39,30 +39,30 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom Strong Dark Sky Blue Header Bar Class */
+/* Custom Purple Navy Header Bar Class */
 .bg-purple-navy-header {
-  background: linear-gradient(135deg, #0369a1 0%, #0284c7 50%, #0c4a6e 100%) !important;
+  background: linear-gradient(135deg, #1e1b4b 0%, #1e1b4b 45%, #172554 100%) !important;
   color: #ffffff !important;
-  border-bottom: 2px solid #0284c7 !important;
+  border-bottom: 2px solid #312e81 !important;
 }
 
 .bg-purple-navy-subbar {
-  background: linear-gradient(180deg, #075985 0%, #0c4a6e 100%) !important;
-  border-top: 1px solid #0369a1 !important;
+  background: linear-gradient(180deg, #18153d 0%, #101935 100%) !important;
+  border-top: 1px solid #2e2863 !important;
 }
 
 /* Modal Blue Theme Overrides */
 .modal-blue-surface {
-  background: linear-gradient(180deg, #082f49 0%, #0c4a6e 100%) !important;
-  border: 1.5px solid #0284c7 !important;
+  background: linear-gradient(180deg, #0b132b 0%, #0f172a 100%) !important;
+  border: 1.5px solid #2563eb !important;
   color: #f8fafc !important;
-  box-shadow: 0 25px 50px -12px rgba(12, 74, 110, 0.7), 0 0 0 1px rgba(2, 132, 199, 0.35) !important;
+  box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.7), 0 0 0 1px rgba(37, 99, 235, 0.25) !important;
 }
 
 .modal-blue-header {
-  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 100%) !important;
   color: #ffffff !important;
-  border-bottom: 1px solid #38bdf8 !important;
+  border-bottom: 1px solid #3b82f6 !important;
 }
 
 /* Global High-Contrast White Background theme utility support */

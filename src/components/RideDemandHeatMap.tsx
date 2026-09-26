@@ -135,24 +135,24 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
   return (
     <div
       id="ride-demand-heatmap-container"
-      className="bg-white border border-sky-200 rounded-2xl overflow-hidden shadow-lg space-y-4 p-4 sm:p-5 text-slate-900"
+      className="bg-neutral-950 border border-neutral-800 rounded-2xl overflow-hidden shadow-2xl space-y-4 p-4 sm:p-5"
     >
       {/* Header & Controls Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-sky-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-neutral-850">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500/20 to-sky-700/20 border border-sky-500/40 flex items-center justify-center text-sky-700 shadow-inner">
-            <Flame className="w-5 h-5 text-sky-600 animate-pulse" />
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-orange-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
+            <Flame className="w-5 h-5 text-amber-400 animate-pulse" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+              <h3 className="text-sm sm:text-base font-bold text-white tracking-tight">
                 Live Ride Demand Heat Map
               </h3>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-100 text-sky-800 border border-sky-300">
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-400/15 text-amber-300 border border-amber-400/30">
                 Surge Radar
               </span>
             </div>
-            <p className="text-xs text-slate-600">
+            <p className="text-xs text-neutral-400">
               Real-time Passenger Density, Surge Multipliers &amp; Driver Clusters
             </p>
           </div>
@@ -160,14 +160,14 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
 
         {/* View Mode Toggle */}
         <div className="flex items-center gap-2">
-          <div className="bg-sky-50 border border-sky-200 p-0.5 rounded-xl flex items-center text-xs">
+          <div className="bg-neutral-900 border border-neutral-850 p-0.5 rounded-xl flex items-center text-xs">
             <button
               type="button"
               onClick={() => setActiveViewMode('visual_map')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeViewMode === 'visual_map'
-                  ? 'bg-sky-700 text-white shadow'
-                  : 'text-slate-600 hover:text-slate-950'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               Surge Radar Map
@@ -177,8 +177,8 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
               onClick={() => setActiveViewMode('grid')}
               className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer ${
                 activeViewMode === 'grid'
-                  ? 'bg-sky-700 text-white shadow'
-                  : 'text-slate-600 hover:text-slate-950'
+                  ? 'bg-amber-400 text-neutral-950 shadow'
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
               City Nodes ({nodes.length})
@@ -202,8 +202,8 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
               }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap flex items-center gap-2 border transition cursor-pointer ${
                 isSelected
-                  ? 'bg-sky-700 border-sky-800 text-white shadow-md ring-2 ring-sky-400/40'
-                  : 'bg-slate-50 border-slate-200 text-slate-700 hover:text-slate-950 hover:bg-slate-100 hover:border-slate-300'
+                  ? 'bg-amber-400/15 border-amber-400 text-amber-300 shadow-md ring-1 ring-amber-400/30'
+                  : 'bg-neutral-900/80 border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
               }`}
             >
               <span>{nodeCountry?.flag || '🌐'}</span>
@@ -211,10 +211,10 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
               <span
                 className={`text-[10px] px-1.5 py-0.2 rounded font-mono ${
                   node.demandSurgeLevel >= 1.4
-                    ? isSelected ? 'bg-red-500 text-white font-bold' : 'bg-red-100 text-red-700 font-bold'
+                    ? 'bg-red-500/20 text-red-300 font-bold'
                     : node.demandSurgeLevel >= 1.2
-                    ? isSelected ? 'bg-amber-400 text-slate-950 font-bold' : 'bg-amber-100 text-amber-800 font-bold'
-                    : isSelected ? 'bg-emerald-400 text-slate-950 font-bold' : 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-amber-500/20 text-amber-300 font-bold'
+                    : 'bg-emerald-500/20 text-emerald-300'
                 }`}
               >
                 {node.demandSurgeLevel}x
@@ -347,11 +347,11 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
           {/* Detailed Corridor Hotspots List */}
           <div className="space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-sky-700" />
+              <span className="font-bold text-white flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-amber-400" />
                 <span>Active Demand Corridors in {selectedNode.city}</span>
               </span>
-              <span className="text-[11px] text-slate-500 font-medium">
+              <span className="text-[11px] text-neutral-400">
                 Tap corridor to set pickup
               </span>
             </div>
@@ -373,35 +373,35 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
                       });
                     }
                   }}
-                  className={`p-3 rounded-xl border transition flex items-center justify-between gap-3 text-xs cursor-pointer shadow-sm ${
+                  className={`p-3 rounded-xl border transition flex items-center justify-between gap-3 text-xs cursor-pointer ${
                     spot.status === 'surge'
-                      ? 'bg-red-50/80 border-red-200 hover:bg-red-100/70 hover:border-red-300'
+                      ? 'bg-red-950/20 border-red-900/50 hover:bg-red-950/40'
                       : spot.status === 'moderate'
-                      ? 'bg-amber-50/80 border-amber-200 hover:bg-amber-100/70 hover:border-amber-300'
-                      : 'bg-slate-50 border-slate-200 hover:bg-slate-100 hover:border-slate-300'
+                      ? 'bg-amber-950/20 border-amber-900/50 hover:bg-amber-950/40'
+                      : 'bg-neutral-900/80 border-neutral-800 hover:bg-neutral-900'
                   }`}
                 >
                   <div className="min-w-0">
-                    <div className="font-semibold text-slate-900 truncate flex items-center gap-1.5">
+                    <div className="font-semibold text-white truncate flex items-center gap-1.5">
                       <span className={`w-2 h-2 rounded-full ${
-                        spot.status === 'surge' ? 'bg-red-500 animate-ping' : spot.status === 'moderate' ? 'bg-amber-500' : 'bg-emerald-500'
+                        spot.status === 'surge' ? 'bg-red-400 animate-ping' : spot.status === 'moderate' ? 'bg-amber-400' : 'bg-emerald-400'
                       }`} />
                       <span className="truncate">{spot.name}</span>
                     </div>
-                    <div className="text-[11px] text-slate-600 mt-0.5 flex items-center gap-2">
-                      <span className="font-medium">{spot.motoCount} Active Motos</span>
+                    <div className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-2">
+                      <span>{spot.motoCount} Active Motos</span>
                       <span>•</span>
-                      <span className="text-emerald-700 font-semibold">~{spot.waitMin} min wait</span>
+                      <span className="text-emerald-400 font-medium">~{spot.waitMin} min wait</span>
                     </div>
                   </div>
 
                   <div className="text-right shrink-0">
                     <span className={`px-2 py-0.5 rounded text-[11px] font-bold font-mono ${
                       spot.status === 'surge'
-                        ? 'bg-red-100 text-red-700 border border-red-300'
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/30'
                         : spot.status === 'moderate'
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                     }`}>
                       {spot.surge}x
                     </span>
@@ -427,27 +427,27 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
                   setSelectedNodeId(node.id);
                   setSelectedCountryCode(node.countryCode);
                 }}
-                className={`p-3.5 rounded-xl border transition cursor-pointer shadow-sm ${
+                className={`p-3.5 rounded-xl border transition cursor-pointer ${
                   isCurrent
-                    ? 'bg-sky-50 border-sky-500 ring-2 ring-sky-300'
-                    : 'bg-white border-slate-200 hover:border-sky-300 hover:bg-sky-50/40'
+                    ? 'bg-amber-400/10 border-amber-400/80 shadow-md ring-1 ring-amber-400/30'
+                    : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700'
                 }`}
               >
                 <div className="flex items-center justify-between text-xs mb-2">
-                  <div className="flex items-center gap-2 font-bold text-slate-900">
+                  <div className="flex items-center gap-2 font-bold text-white">
                     <span className="text-base">{nodeCountry?.flag}</span>
                     <span>{node.city}</span>
-                    <span className="text-[10px] text-slate-500 font-normal">
+                    <span className="text-[10px] text-neutral-400 font-normal">
                       ({node.countryCode})
                     </span>
                   </div>
                   <span
                     className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-mono ${
                       node.demandSurgeLevel >= 1.4
-                        ? 'bg-red-100 text-red-700 border border-red-300'
+                        ? 'bg-red-500/20 text-red-300 border border-red-500/40'
                         : node.demandSurgeLevel >= 1.2
-                        ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/40'
+                        : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
                     }`}
                   >
                     Surge: {node.demandSurgeLevel}x
@@ -455,30 +455,30 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
                 </div>
 
                 {/* Fleet Breakdown */}
-                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] bg-slate-50 p-2 rounded-lg border border-slate-200 mb-2">
+                <div className="grid grid-cols-3 gap-1.5 text-center text-[10px] bg-neutral-950 p-2 rounded-lg border border-neutral-850 mb-2">
                   <div>
-                    <div className="text-slate-500 font-medium">2-Wheeler</div>
-                    <div className="font-bold text-amber-600 font-mono mt-0.5">
+                    <div className="text-neutral-400">2-Wheeler</div>
+                    <div className="font-bold text-amber-400 font-mono mt-0.5">
                       {node.activeTwoWheelers}
                     </div>
                   </div>
                   <div>
-                    <div className="text-slate-500 font-medium">Tuk-Tuk</div>
-                    <div className="font-bold text-sky-700 font-mono mt-0.5">
+                    <div className="text-neutral-400">Tuk-Tuk</div>
+                    <div className="font-bold text-sky-400 font-mono mt-0.5">
                       {node.activeThreeWheelers}
                     </div>
                   </div>
                   <div>
-                    <div className="text-slate-500 font-medium">Cabs</div>
-                    <div className="font-bold text-emerald-700 font-mono mt-0.5">
+                    <div className="text-neutral-400">Cabs</div>
+                    <div className="font-bold text-emerald-400 font-mono mt-0.5">
                       {node.activeFourWheelers}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-600">
-                  <span className="font-medium">Driver Avg/Hr:</span>
-                  <span className="font-bold text-slate-900 font-mono">
+                <div className="flex items-center justify-between text-[11px] text-neutral-400">
+                  <span>Driver Avg/Hr:</span>
+                  <span className="font-bold text-white font-mono">
                     ${node.averageHourlyEarningUSD.toFixed(2)} USD
                   </span>
                 </div>
@@ -489,13 +489,13 @@ export const RideDemandHeatMap: React.FC<RideDemandHeatMapProps> = ({
       )}
 
       {/* Demand & Pricing Education Footer */}
-      <div className="pt-2 border-t border-sky-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-600">
+      <div className="pt-2 border-t border-neutral-850 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-neutral-400">
         <div className="flex items-center gap-1.5">
-          <Info className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+          <Info className="w-3.5 h-3.5 text-amber-400 shrink-0" />
           <span>Surge multipliers incentivize more nearby moto drivers to head toward high-demand sectors.</span>
         </div>
-        <div className="text-sky-800 font-semibold flex items-center gap-1">
-          <Zap className="w-3 h-3 text-sky-600" />
+        <div className="text-amber-300 font-semibold flex items-center gap-1">
+          <Zap className="w-3 h-3 text-amber-400" />
           <span>LBC Cashback applies to full surge fare</span>
         </div>
       </div>

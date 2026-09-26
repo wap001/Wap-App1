@@ -49,18 +49,18 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
   const currentSpeed = isOffline ? 0 : Math.round(28 + Math.sin(t * 10) * 8);
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-sky-300 shadow-md relative">
+    <div className="bg-neutral-900 rounded-xl overflow-hidden border border-neutral-800 shadow-inner relative">
       {/* Map Header Status Bar */}
-      <div className="bg-gradient-to-r from-sky-800 to-sky-950 px-4 py-2 border-b border-sky-700 flex items-center justify-between text-xs text-sky-100">
+      <div className="bg-neutral-800/90 backdrop-blur px-4 py-2 border-b border-neutral-700/60 flex items-center justify-between text-xs text-neutral-300">
         <div className="flex items-center gap-2">
           <span className="flex h-2 w-2 relative">
             <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isOffline ? 'bg-red-400' : 'bg-emerald-400'}`} />
             <span className={`relative inline-flex rounded-full h-2 w-2 ${isOffline ? 'bg-red-500' : 'bg-emerald-500'}`} />
           </span>
-          <span className="font-bold text-white tracking-wide">
+          <span className="font-semibold text-white">
             {isOffline ? 'Offline GPS Dead-Reckoning' : 'Google Maps Routes API + MQTT Stream'}
           </span>
-          <span className="bg-sky-900/90 text-sky-200 border border-sky-600 px-1.5 py-0.5 rounded font-mono text-[10px]">
+          <span className="bg-neutral-700 text-neutral-300 px-1.5 py-0.5 rounded font-mono text-[10px]">
             QoS 1 • Latency 42ms
           </span>
         </div>
@@ -72,16 +72,16 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
             className={`px-2 py-0.5 rounded text-[11px] font-semibold flex items-center gap-1 transition ${
               showHeatmap
                 ? 'bg-amber-400 text-neutral-950 shadow'
-                : 'bg-sky-900/80 hover:bg-sky-800 text-white border border-sky-600'
+                : 'bg-neutral-700 hover:bg-neutral-600 text-neutral-300'
             }`}
           >
             <Flame className={`w-3.5 h-3.5 ${showHeatmap ? 'text-neutral-950 fill-neutral-950' : 'text-amber-400'}`} />
             <span>{showHeatmap ? 'Surge Map: ON' : 'Surge Map'}</span>
           </button>
-          <span className="font-mono text-amber-300 font-bold">{currentSpeed} km/h</span>
+          <span className="font-mono text-amber-400 font-bold">{currentSpeed} km/h</span>
           <button
             onClick={() => setIsPlaying(!isPlaying)}
-            className="px-2 py-0.5 rounded bg-sky-900/80 hover:bg-sky-800 text-white border border-sky-600 text-[11px] font-medium transition cursor-pointer"
+            className="px-2 py-0.5 rounded bg-neutral-700 hover:bg-neutral-600 text-[11px] font-medium transition"
           >
             {isPlaying ? 'Pause' : 'Resume'}
           </button>
@@ -153,20 +153,20 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
 
         {/* Pickup Landmark Overlay */}
         <div
-          className="absolute bg-white/95 border-2 border-emerald-500 rounded-lg px-2.5 py-1 text-[11px] shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
+          className="absolute bg-neutral-900/95 border border-emerald-500/80 rounded px-2 py-1 text-[10px] text-emerald-300 shadow pointer-events-none transform -translate-x-1/2 -translate-y-full"
           style={{ left: `${pickupPoint.x}px`, top: `${pickupPoint.y - 12}px` }}
         >
-          <div className="font-bold text-emerald-800">Pickup Point</div>
-          <div className="truncate max-w-[140px] text-slate-900 font-semibold">{order.pickupLandmark}</div>
+          <div className="font-semibold text-white">Pickup Point</div>
+          <div className="truncate max-w-[130px]">{order.pickupLandmark}</div>
         </div>
 
         {/* Dropoff Landmark Overlay */}
         <div
-          className="absolute bg-white/95 border-2 border-red-500 rounded-lg px-2.5 py-1 text-[11px] shadow-lg pointer-events-none transform -translate-x-1/2 -translate-y-full"
+          className="absolute bg-neutral-900/95 border border-red-500/80 rounded px-2 py-1 text-[10px] text-red-300 shadow pointer-events-none transform -translate-x-1/2 -translate-y-full"
           style={{ left: `${dropoffPoint.x}px`, top: `${dropoffPoint.y - 12}px` }}
         >
-          <div className="font-bold text-red-700">Destination</div>
-          <div className="truncate max-w-[140px] text-slate-900 font-semibold">{order.dropoffLandmark}</div>
+          <div className="font-semibold text-white">Destination</div>
+          <div className="truncate max-w-[140px]">{order.dropoffLandmark}</div>
         </div>
 
         {/* Animated Moving Motorcycle Avatar */}
@@ -176,28 +176,28 @@ export const LiveRouteMap: React.FC<LiveRouteMapProps> = ({ order, region, isOff
         >
           <div className="relative">
             {/* Pulse Ripple */}
-            <div className="absolute -inset-2 bg-sky-400/40 rounded-full animate-ping" />
-            <div className="w-9 h-9 rounded-full bg-amber-400 border-2 border-slate-900 shadow-xl flex items-center justify-center text-slate-950 font-bold">
-              <Bike className="w-5 h-5 text-slate-950 fill-slate-950" />
+            <div className="absolute -inset-2 bg-amber-400/30 rounded-full animate-ping" />
+            <div className="w-9 h-9 rounded-full bg-amber-500 border-2 border-white shadow-lg flex items-center justify-center text-neutral-950">
+              <Bike className="w-5 h-5 text-neutral-950 fill-neutral-950" />
             </div>
             {/* Compass Heading Arrow */}
-            <div className="absolute -bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-amber-300 font-mono text-[9px] font-bold px-1.5 py-0.5 rounded border border-slate-700 whitespace-nowrap shadow">
+            <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 bg-neutral-950/90 text-amber-300 font-mono text-[9px] px-1 py-0.2 rounded border border-neutral-700 whitespace-nowrap">
               {Math.round((1 - progress) * order.estimatedMinutes)} min left
             </div>
           </div>
         </div>
 
         {/* Telemetry HUD Inset in corner */}
-        <div className="absolute bottom-2.5 left-2.5 bg-slate-950/95 border border-sky-500/60 rounded-xl p-2.5 text-[11px] text-slate-200 backdrop-blur max-w-[250px] shadow-xl">
+        <div className="absolute bottom-2.5 left-2.5 bg-neutral-900/90 border border-neutral-700/80 rounded-lg p-2 text-[11px] text-neutral-300 backdrop-blur max-w-[240px]">
           <div className="flex items-center gap-1.5 font-bold text-white mb-1">
-            <Radio className="w-3.5 h-3.5 text-sky-400 animate-pulse" />
+            <Radio className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
             <span>Driver Telemetry (Haojin 150)</span>
           </div>
-          <div className="text-[10px] space-y-0.5 text-slate-300 font-mono">
-            <div>Driver: <span className="text-white font-semibold">{order.driver?.fullName || 'Jean-Baptiste Voltaire'}</span></div>
-            <div>Plate: <span className="text-amber-300 font-semibold">{order.driver?.plateNumber || 'MC-89421-HT'}</span></div>
-            <div>Helmet: <span className="text-emerald-400 font-semibold">Verified (ECE 22.06)</span></div>
-            <div>Remaining: <span className="text-sky-300 font-semibold">{(order.distanceKm * (1 - progress)).toFixed(1)} km</span></div>
+          <div className="text-[10px] space-y-0.5 text-neutral-400 font-mono">
+            <div>Driver: {order.driver?.fullName || 'Jean-Baptiste Voltaire'}</div>
+            <div>Plate: {order.driver?.plateNumber || 'MC-89421-HT'}</div>
+            <div>Helmet Verified: Yes (ECE 22.06)</div>
+            <div>Remaining Distance: {(order.distanceKm * (1 - progress)).toFixed(1)} km</div>
           </div>
         </div>
       </div>

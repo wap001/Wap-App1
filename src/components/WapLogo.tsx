@@ -32,11 +32,11 @@ export const WapLogo: React.FC<WapLogoProps> = ({
         className="w-full h-full drop-shadow-md"
       >
         <defs>
-          {/* Deep Navy/Sky Blue Gradient for Shield */}
+          {/* Deep Navy/Purple Gradient for Shield */}
           <linearGradient id="wapShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0369a1" />
-            <stop offset="50%" stopColor="#0284c7" />
-            <stop offset="100%" stopColor="#0c4a6e" />
+            <stop offset="0%" stopColor="#1e1b4b" />
+            <stop offset="50%" stopColor="#2e1065" />
+            <stop offset="100%" stopColor="#0f172a" />
           </linearGradient>
 
           {/* Radiant Amber-Gold Gradient for Wings & Lightning */}

@@ -113,29 +113,13 @@ export default function App() {
   const [showAboutUsModal, setShowAboutUsModal] = useState<boolean>(false);
   const [showDriverContractModal, setShowDriverContractModal] = useState<boolean>(false);
   const [showEmergencyChatbotModal, setShowEmergencyChatbotModal] = useState<boolean>(false);
-  const [routeProtectionToast, setRouteProtectionToast] = useState<string | null>(null);
 
-  // Sync role and region from URL search params on mount with strict route protection
+  // Sync role and region from URL search params on mount
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const roleParam = params.get('role');
-      const tabParam = params.get('tab');
-
-      // Page Route Protection: Check if attempting to access administrative portal
-      const isAttemptingAdmin = roleParam === 'admin' || tabParam === 'admin' || activeRole === 'admin';
-      const hasAdminClearance = currentUser && currentUser.role === 'admin';
-
-      if (isAttemptingAdmin && !hasAdminClearance) {
-        // Automatically redirect unauthorized user back to main interactive map interface (Customer radar)
-        setActiveRole('customer');
-        setActiveTab('customer');
-        updateUrlForRole('customer');
-        setRouteProtectionToast(
-          'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators with RBAC Level 4 clearance. You have been redirected to the main interactive map interface.'
-        );
-        setTimeout(() => setRouteProtectionToast(null), 7000);
-      } else if (roleParam === 'customer' || roleParam === 'driver' || roleParam === 'merchant' || (roleParam === 'admin' && hasAdminClearance)) {
+      if (roleParam === 'customer' || roleParam === 'driver' || roleParam === 'merchant' || roleParam === 'admin') {
         setActiveRole(roleParam as ActiveRole);
         setActiveTab(roleParam as ActiveTabId);
       }
@@ -149,7 +133,7 @@ export default function App() {
     } catch {
       // safe fallback
     }
-  }, [currentUser]);
+  }, []);
 
   // Update URL search params when activeRole changes
   const updateUrlForRole = (role: ActiveRole) => {
@@ -224,18 +208,8 @@ export default function App() {
     }
   };
 
-  // Role switcher and legacy tab handler with RBAC route protection
+  // Role switcher and legacy tab handler
   const handleSelectRole = (role: ActiveRole) => {
-    if (role === 'admin' && (!currentUser || currentUser.role !== 'admin')) {
-      setActiveRole('customer');
-      setActiveTab('customer');
-      updateUrlForRole('customer');
-      setRouteProtectionToast(
-        'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators with RBAC Level 4 clearance. You have been redirected to the main interactive map interface.'
-      );
-      setTimeout(() => setRouteProtectionToast(null), 7000);
-      return;
-    }
     setActiveRole(role);
     setActiveTab(role);
     setIsWelcomeActive(false);
@@ -246,6 +220,7 @@ export default function App() {
   };
 
   const handleSelectTab = (tab: ActiveTabId) => {
+    setActiveTab(tab);
     setIsWelcomeActive(false);
     if (tab === 'customer' || tab === 'simulator') {
       setActiveRole('customer');
@@ -260,16 +235,6 @@ export default function App() {
       updateUrlForRole('merchant');
       setCurrentUser((prev) => (prev ? { ...prev, role: 'merchant' } : prev));
     } else {
-      if (!currentUser || currentUser.role !== 'admin') {
-        setActiveRole('customer');
-        setActiveTab('customer');
-        updateUrlForRole('customer');
-        setRouteProtectionToast(
-          'Access Denied: Administrative portal is restricted exclusively to authorized platform administrators. You have been redirected to the main interactive map interface.'
-        );
-        setTimeout(() => setRouteProtectionToast(null), 7000);
-        return;
-      }
       setActiveRole('admin');
       updateUrlForRole('admin');
       if (tab === 'marketplace-lbc') setAdminInitialSection('marketplace-brokerage');
@@ -286,7 +251,7 @@ export default function App() {
       else if (tab === 'architecture' || tab === 'offline') setAdminInitialSection('architecture');
       else if (tab === 'database') setAdminInitialSection('database');
       else if (tab === 'maps') setAdminInitialSection('maps');
-      else setAdminInitialSection('dashboard');
+      else setAdminInitialSection('operations');
     }
   };
 
@@ -397,11 +362,11 @@ export default function App() {
       )}
 
       {/* Mobile Frame Mode Toggle & Direct Role Navigation Sub-Bar */}
-      <div className="bg-sky-50 border-b border-sky-200 px-4 py-2">
+      <div className="bg-neutral-900/90 border-b border-neutral-800 px-4 py-2">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2 text-xs">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-sky-900">Unified Mobile App:</span>
-            <span className="text-slate-600 hidden sm:inline">
+            <span className="font-semibold text-amber-400">Unified Mobile App:</span>
+            <span className="text-neutral-400 hidden sm:inline">
               Role-specific pages for Customers, Drivers &amp; Merchants with in-app task &amp; account management
             </span>
           </div>
@@ -412,8 +377,8 @@ export default function App() {
               onClick={() => setIsMobileFrameMode(!isMobileFrameMode)}
               className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition border cursor-pointer ${
                 isMobileFrameMode
-                  ? 'bg-sky-700 text-white border-sky-800 shadow-sm'
-                  : 'bg-white text-slate-800 border-sky-300 hover:bg-sky-100/60 shadow-sm'
+                  ? 'bg-amber-400 text-neutral-950 border-amber-300 shadow'
+                  : 'bg-neutral-950 text-neutral-300 border-neutral-800 hover:border-neutral-700'
               }`}
               title="Toggle between full viewport and mobile phone simulator"
             >
@@ -424,7 +389,7 @@ export default function App() {
                 </>
               ) : (
                 <>
-                  <Smartphone className="w-3.5 h-3.5 text-sky-600" />
+                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
                   <span>Mobile Device Frame</span>
                 </>
               )}
@@ -560,29 +525,29 @@ export default function App() {
       />
 
       {/* Footer */}
-      <footer className="bg-slate-900 border-t border-sky-800/60 py-4 text-xs text-slate-300">
+      <footer className="bg-neutral-900 border-t border-neutral-800/80 py-4 text-xs text-neutral-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Bike className="w-4 h-4 text-amber-400" />
-            <span className="font-bold text-white">Wap Architecture Suite</span>
-            <span className="text-slate-400">• On-Demand Motorcycle Rides &amp; Deliveries for Caribbean Immigrant Communities</span>
+            <span className="font-semibold text-white">Wap Architecture Suite</span>
+            <span>• On-Demand Motorcycle Rides & Deliveries for Caribbean Immigrant Communities</span>
           </div>
-          <div className="flex items-center gap-4 text-slate-300 font-medium">
+          <div className="flex items-center gap-4 text-neutral-500">
             <button
               onClick={() => setShowAboutUsModal(true)}
-              className="text-sky-300 hover:text-white font-semibold underline underline-offset-2 cursor-pointer transition"
+              className="text-amber-400 hover:text-amber-300 font-semibold underline underline-offset-2 cursor-pointer"
             >
               About Us &amp; Platform Charter
             </button>
             <button
               onClick={() => setShowDriverContractModal(true)}
-              className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 cursor-pointer transition"
+              className="text-emerald-400 hover:text-emerald-300 font-semibold underline underline-offset-2 cursor-pointer"
             >
               Driver Legal Contracts
             </button>
             <button
               onClick={() => setShowEmergencyChatbotModal(true)}
-              className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2 cursor-pointer transition"
+              className="text-red-400 hover:text-red-300 font-semibold underline underline-offset-2 cursor-pointer"
             >
               Emergency Support Chat
             </button>

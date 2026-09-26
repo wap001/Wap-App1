@@ -38,11 +38,8 @@ import { MobileAppDesignStudio } from './MobileAppDesignStudio';
 import { MobileBuildEngineerView } from './MobileBuildEngineerView';
 import { MultilingualCMSView } from './MultilingualCMSView';
 import { MarketplaceLbcBrokerageView } from './MarketplaceLbcBrokerageView';
-import { AdminDashboardControlCenter } from './AdminDashboardControlCenter';
-import { AuthUserData } from './WelcomeLandingInterface';
 
 export type AdminSectionId =
-  | 'dashboard'
   | 'operations'
   | 'verification'
   | 'onboarding'
@@ -64,50 +61,15 @@ interface AdminPanelWorkspaceProps {
   language: LanguageCode;
   onPlaySpeech: (text: string) => void;
   initialSection?: AdminSectionId;
-  currentUser?: AuthUserData | null;
-  onRedirectToMap?: () => void;
 }
 
 export const AdminPanelWorkspace: React.FC<AdminPanelWorkspaceProps> = ({
   region,
   language,
   onPlaySpeech,
-  initialSection = 'dashboard',
-  currentUser,
-  onRedirectToMap
+  initialSection = 'operations'
 }) => {
   const [activeSection, setActiveSection] = useState<AdminSectionId>(initialSection);
-
-  // Row-Level Security client-side boundary guard
-  const isAuthorizedAdmin = currentUser && currentUser.role === 'admin';
-
-  if (!isAuthorizedAdmin) {
-    return (
-      <div className="bg-neutral-900 border border-red-800 rounded-3xl p-8 max-w-2xl mx-auto my-12 shadow-2xl text-center space-y-4">
-        <div className="w-16 h-16 rounded-full bg-red-950 border-2 border-red-600 flex items-center justify-center mx-auto text-red-500">
-          <ShieldAlert className="w-8 h-8 animate-bounce" />
-        </div>
-        <span className="text-xs font-mono font-black uppercase text-red-400 tracking-wider">
-          403 Forbidden • Row-Level Security Interception
-        </span>
-        <h2 className="text-xl font-black text-white">
-          Unauthorized Access Attempt Intercepted
-        </h2>
-        <p className="text-xs text-neutral-300 max-w-lg mx-auto leading-relaxed">
-          The administrative control panel, KYC records, and sensitive platform telemetry are strictly reserved for designated administrators. Standard customer, driver, and merchant accounts do not have clearance.
-        </p>
-        <div className="pt-2">
-          <button
-            type="button"
-            onClick={onRedirectToMap}
-            className="px-6 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 text-xs font-bold shadow-lg transition cursor-pointer"
-          >
-            ← Return to Interactive Map Radar
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   const adminNavItems: {
     id: AdminSectionId;
@@ -116,14 +78,6 @@ export const AdminPanelWorkspace: React.FC<AdminPanelWorkspaceProps> = ({
     badge?: string;
     category: 'Operations' | 'Fleet & Security' | 'Engineering' | 'DevOps & Data';
   }[] = [
-    // Top Priority: Dedicated Admin Suite
-    {
-      id: 'dashboard',
-      label: 'Admin Control Center (KYC, Users, Logs, Fees)',
-      icon: <ShieldAlert className="w-3.5 h-3.5 text-red-400" />,
-      badge: 'Core Tools',
-      category: 'Operations'
-    },
     // Operations & Telemetry
     {
       id: 'operations',
@@ -310,15 +264,6 @@ export const AdminPanelWorkspace: React.FC<AdminPanelWorkspaceProps> = ({
 
       {/* Active Administrative Module Content */}
       <div className="transition-all">
-        {activeSection === 'dashboard' && (
-          <AdminDashboardControlCenter
-            region={region}
-            language={language}
-            onPlaySpeech={onPlaySpeech}
-            currentUser={currentUser}
-          />
-        )}
-
         {activeSection === 'operations' && <AdminOperationsConsole />}
 
         {activeSection === 'marketplace-brokerage' && (

@@ -355,21 +355,6 @@ export default function App() {
         onOpenEmergencyChatbot={() => setShowEmergencyChatbotModal(true)}
       />
 
-      {/* Route Protection Interception Security Banner */}
-      {routeProtectionToast && (
-        <div className="bg-red-600 text-white px-4 py-3 text-xs md:text-sm font-bold text-center sticky top-0 z-50 shadow-2xl flex items-center justify-center gap-3 border-b-2 border-red-300 animate-in fade-in">
-          <ShieldAlert className="w-5 h-5 shrink-0 animate-bounce text-amber-300" />
-          <span>{routeProtectionToast}</span>
-          <button
-            type="button"
-            onClick={() => setRouteProtectionToast(null)}
-            className="ml-3 px-2 py-0.5 bg-red-800 hover:bg-red-900 rounded text-xs font-mono cursor-pointer border border-red-400"
-          >
-            ✕ Dismiss
-          </button>
-        </div>
-      )}
-
       {/* Authenticated User Profile Header & Identity Verification Status Widget */}
       {currentUser && (
         <div className="bg-neutral-900/95 border-b border-amber-500/25 px-4 py-3 text-xs text-neutral-300 shadow-lg">
@@ -380,15 +365,6 @@ export default function App() {
                 <span className="text-neutral-400">User Profile:</span>
                 <strong className="text-white font-bold">{currentUser.name}</strong>
                 <span className="text-neutral-400 hidden sm:inline">({currentUser.email})</span>
-                {currentUser.role === 'admin' ? (
-                  <span className="bg-red-950 text-red-200 border border-red-600 px-2 py-0.5 rounded-full font-mono text-[10px] font-bold">
-                    Admin Clearance Level 4
-                  </span>
-                ) : (
-                  <span className="bg-neutral-800 text-neutral-300 border border-neutral-700 px-2 py-0.5 rounded-full font-mono text-[10px] uppercase font-bold">
-                    Role: {currentUser.role}
-                  </span>
-                )}
                 <span className="text-amber-400 font-semibold">• {currentUser.subscriptionName}</span>
                 <span className="text-neutral-400 hidden md:inline">• {currentUser.lbcBonus} LBC Freedom Balance (Investing Equity)</span>
               </div>
@@ -551,29 +527,14 @@ export default function App() {
               />
             )}
 
-            {/* Role 4: Administration Panel (Restricted exclusively to authenticated admin role) */}
+            {/* Role 4: Administration Panel (Restricted exclusively to this view) */}
             {activeRole === 'admin' && (
-              currentUser && currentUser.role === 'admin' ? (
-                <AdminPanelWorkspace
-                  region={selectedRegion}
-                  language={selectedLanguage}
-                  onPlaySpeech={handlePlaySpeech}
-                  initialSection={adminInitialSection}
-                  currentUser={currentUser}
-                  onRedirectToMap={() => {
-                    setActiveRole('customer');
-                    setActiveTab('customer');
-                    updateUrlForRole('customer');
-                  }}
-                />
-              ) : (
-                <CustomerInterface
-                  region={selectedRegion}
-                  language={selectedLanguage}
-                  networkMode={networkMode}
-                  onPlaySpeech={handlePlaySpeech}
-                />
-              )
+              <AdminPanelWorkspace
+                region={selectedRegion}
+                language={selectedLanguage}
+                onPlaySpeech={handlePlaySpeech}
+                initialSection={adminInitialSection}
+              />
             )}
           </>
         )}

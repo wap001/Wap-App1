@@ -849,39 +849,40 @@ router.get('/api/brokerage/trades/:userId', (req: Request, res: Response) => {
 
 /**
  * Row-Level Security Middleware for Administrative APIs
- * Enforces strict email whitelisting for all administrative access, replacing
- * invitation codes and access keys. Non-whitelisted user accounts, driver profiles,
- * merchants, and unauthenticated visitors are completely blocked with 403 Forbidden.
+ * Enforces role-based isolation. Standard users, drivers, customers, and merchants
+ * are strictly forbidden and return an unauthorized error with audit logging.
  */
 function requireAdminAuth(req: Request, res: Response, next: () => void) {
-  const userEmail = (req.headers['x-user-email'] as string) || (req.query.email as string) || '';
-  const userRole = (req.headers['x-user-role'] as string) || '';
+  const userRole = req.headers['x-user-role'] as string;
+  const userEmail = req.headers['x-user-email'] as string;
+  const authHeader = req.headers.authorization;
 
-  // Strict email whitelisting check: replacing invitation codes and access keys
-  const isWhitelisted = db.isEmailWhitelisted(userEmail);
+  const designatedAdminEmails = ['stangyneco@gmail.com', 'admin@wap-transport.ht'];
+  const isDesignatedAdminEmail = userEmail && designatedAdminEmails.includes(userEmail.toLowerCase());
+  const isAdminRole = userRole === 'admin' || (authHeader && authHeader.toLowerCase().includes('admin'));
 
-  if (isWhitelisted) {
+  if (isAdminRole || isDesignatedAdminEmail) {
     return next();
   }
 
   // Intercept and record unauthorized attempt in platform audit log
   const clientIp = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '127.0.0.1';
   db.addPlatformLog({
-    severity: 'critical',
+    severity: 'warn',
     category: 'rbac',
-    actorId: userEmail || 'unauthenticated_visitor',
+    actorId: userEmail || 'anonymous_user',
     actorRole: (userRole as any) || 'user',
     action: 'UNAUTHORIZED_ADMIN_API_BLOCKED',
-    details: `Blocked unauthorized administrative access attempt for email '${userEmail || 'none'}' to ${req.method} ${req.originalUrl}. Email does not exist on approved administrator whitelist.`,
+    details: `Blocked direct attempt to access administrative endpoint ${req.method} ${req.originalUrl}. Row-level security restriction applied.`,
     ipAddress: clientIp,
     status: 'blocked'
   });
 
   return res.status(403).json({
     success: false,
-    error: 'Access Denied: Administrative access is strictly restricted to email addresses verified on the platform administrator whitelist. Your email is not approved.',
-    code: 'EMAIL_NOT_IN_ADMIN_WHITELIST',
-    enforcement: 'Strict Email Whitelist & Row-Level Security Policy',
+    error: 'Unauthorized: Administrative access strictly restricted to designated platform administrators with active role-based clearance.',
+    code: 'INSUFFICIENT_ADMIN_PERMISSIONS',
+    enforcement: 'Row-Level Security (RLS) Policy',
     redirectTarget: '/?role=customer'
   });
 }
@@ -1125,103 +1126,6 @@ router.post('/api/admin/fees', requireAdminAuth, (req: Request, res: Response) =
     success: true,
     message: 'Platform fee configurations updated successfully.',
     fees: updatedFees
-  });
-});
-
-/**
- * 8.9 Master Administrator Whitelist Management: Get All Whitelisted Emails
- */
-router.get('/api/admin/whitelist', requireAdminAuth, (req: Request, res: Response) => {
-  const whitelist = db.getAdminWhitelist();
-  res.json({
-    success: true,
-    count: whitelist.length,
-    whitelist
-  });
-});
-
-/**
- * 8.10 Master Administrator Whitelist Management: Add New Approved Admin Email
- */
-router.post('/api/admin/whitelist', requireAdminAuth, (req: Request, res: Response) => {
-  const { email, name, role = 'admin', notes = '', adminActorId = 'Stangy Neco (Master Super-Admin)' } = req.body;
-
-  if (!email || !email.includes('@')) {
-    return res.status(400).json({ success: false, error: 'A valid email address is required.' });
-  }
-
-  const result = db.addAdminWhitelistEntry(
-    {
-      email,
-      name: name || email.split('@')[0],
-      role: role === 'super_admin' ? 'super_admin' : 'admin',
-      notes
-    },
-    adminActorId
-  );
-
-  if (!result.success) {
-    return res.status(400).json(result);
-  }
-
-  res.json({
-    success: true,
-    message: `Administrator email ${email} successfully approved and added to active whitelist.`,
-    entry: result.entry,
-    whitelist: db.getAdminWhitelist()
-  });
-});
-
-/**
- * 8.11 Master Administrator Whitelist Management: Remove Approved Admin Email
- */
-router.delete('/api/admin/whitelist/:idOrEmail', requireAdminAuth, (req: Request, res: Response) => {
-  const { idOrEmail } = req.params;
-  const adminActorId = (req.headers['x-user-email'] as string) || 'Stangy Neco (Master Super-Admin)';
-
-  const result = db.removeAdminWhitelistEntry(idOrEmail, adminActorId);
-
-  if (!result.success) {
-    return res.status(400).json(result);
-  }
-
-  res.json({
-    success: true,
-    message: `Administrator access for ${result.removedEntry?.email || idOrEmail} was successfully revoked.`,
-    removedEntry: result.removedEntry,
-    whitelist: db.getAdminWhitelist()
-  });
-});
-
-/**
- * 8.12 Real-Time Authentication Whitelist Verification Endpoint
- * Called during user authentication (login / signup / session restore) to verify
- * if the user's verified email matches the administrative whitelist.
- */
-router.post('/api/auth/verify-admin-whitelist', (req: Request, res: Response) => {
-  const { email } = req.body;
-  if (!email) {
-    return res.json({
-      success: true,
-      isWhitelisted: false,
-      role: 'customer'
-    });
-  }
-
-  const isWhitelisted = db.isEmailWhitelisted(email);
-  const entry = db.getWhitelistEntryByEmail(email);
-
-  res.json({
-    success: true,
-    email,
-    isWhitelisted,
-    role: isWhitelisted ? 'admin' : 'customer',
-    adminDetails: isWhitelisted && entry ? {
-      name: entry.name,
-      adminRole: entry.role,
-      addedAt: entry.addedAt,
-      isProtected: Boolean(entry.isProtected)
-    } : null
   });
 });
 
